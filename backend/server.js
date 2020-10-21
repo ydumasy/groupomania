@@ -1,5 +1,6 @@
 const http = require('http');
 const app = require('./app');
+require('./config/sequelize-config');
 
 // Définition du port utilisé
 const port = process.env.PORT || 3000;
