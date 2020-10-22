@@ -27,3 +27,5 @@ const User = sequelize.define('User', {
 User.sync()
     .then(() => console.log("The table for the User model is created"))
     .catch(error => console.log(error));
+
+module.exports = User;
