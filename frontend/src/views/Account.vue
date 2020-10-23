@@ -16,7 +16,7 @@
         </div>
       </form>
       <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
-      <button @click="newUser" class="new-user">Je m'inscris</button>
+      <button @click="newUser" class="button">Je m'inscris</button>
     </div>
     <div v-else>
       <form class="form">
@@ -43,53 +43,22 @@
           <div class="form-div">
             <input @click="signup" type="submit" value="Inscription" class="submit">
           </div>
+          <button @click="registeredUser" class="button">Déjà inscrit ?</button>
         </form>
     </div>
   </div>
 </template>
 
 <script>
-  import axios from '@/axios.js';
+  import { mapState, mapActions } from 'vuex';
 
   export default {
     name: 'Account',
-    data() {
-      return {
-        pseudo: '',
-        connected: false,
-        registered: true,
-        userSignup: {
-          firstName: '',
-          lastName: '',
-          email: '',
-          pseudo: '',
-          password: ''
-        },
-        userLogin: {
-          pseudo: '',
-          password: ''
-        }
-      }
+    computed: {
+      ...mapState(['pseudo', 'userSignup', 'userLogin', 'registered', 'connected'])
     },
     methods: {
-      newUser() {
-        this.registered = false;
-      },
-      signup() {
-        this.pseudo = this.userSignup.pseudo;
-        axios.post('/users/signup', this.userSignup)
-          .then(response => console.log(response))
-          .catch(error => console.log(error));
-        this.registered = true;
-        this.connected = true;
-      },
-      login() {
-        this.pseudo = this.userLogin.pseudo;
-        axios.post('/users/login', this.userLogin)
-          .then(response => console.log(response))
-          .catch(error => console.log(error));
-        this.connected = true;
-      }
+      ...mapActions(['newUser', 'registeredUser', 'signup', 'login']),
     }
   }
 </script>
@@ -109,8 +78,8 @@
     cursor: pointer;
   }
 }
-.new-user {
-  font-size: 1rem;
+.button {
+  font-size: 0.85rem;
   cursor: pointer;
 }
 </style>
