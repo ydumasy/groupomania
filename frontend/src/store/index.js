@@ -22,14 +22,20 @@ export default new Vuex.Store({
     registered: true
   },
   mutations: {
-    UNREGISTERED(state) {
-      state.registered = false;
-    },
     REGISTERED(state) {
       state.registered = true;
     },
+    UNREGISTERED(state) {
+      state.registered = false;
+    },
     CONNECTED(state) {
       state.connected = true;
+    },
+    DISCONNECTED(state) {
+      state.connected = false;
+    },
+    SHOW_USER(state) {
+      state.pseudo = localStorage.getItem('pseudo');
     },
     CHANGE_PSEUDO_SIGNUP(state) {
       state.pseudo = state.userSignup.pseudo;
@@ -39,18 +45,31 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    newUser({ commit }) {
+    registerUser({ commit }) {
+      commit('REGISTERED');
+    },
+    unregisterUser({ commit }) {
       commit('UNREGISTERED');
     },
-    registeredUser({ commit }) {
-      commit('REGISTERED');
+    connectUser({ commit }) {
+      commit('CONNECTED');
+    },
+    disconnectUser({ commit }) {
+      commit('DISCONNECTED');
+      localStorage.clear();
+      location.reload();
+    },
+    showUser({ commit }) {
+      commit('SHOW_USER');
     },
     signup({ state, commit }, e) {
       e.preventDefault();
-      commit('CHANGE_PSEUDO_SIGNUP');
       axios.post('/users/signup', state.userSignup)
         .then(response => {
           console.log(response);
+          commit('CHANGE_PSEUDO_SIGNUP');
+          if (localStorage.getItem('pseudo') !== null) localStorage.clear();
+          localStorage.setItem('pseudo', state.pseudo);
           commit('REGISTERED');
           commit('CONNECTED');
         })
@@ -62,6 +81,8 @@ export default new Vuex.Store({
         .then(response => {
           console.log(response);
           commit('CHANGE_PSEUDO_LOGIN');
+          if (localStorage.getItem('pseudo') !== null) localStorage.clear();
+          localStorage.setItem('pseudo', state.pseudo);
           commit('CONNECTED');
         })
         .catch(error => console.log(error));

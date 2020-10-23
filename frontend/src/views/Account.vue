@@ -1,6 +1,9 @@
 <template>
   <div class="account">
-    <div v-if="registered && connected">Bonjour {{ pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</div>
+    <div v-if="registered && connected">
+      <p>Bonjour {{ pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</p>
+      <button @click="disconnectUser" class="button">Déconnexion</button>
+    </div>
     <div v-else-if="registered && !connected">
       <form class="form">
         <div class="form-div">
@@ -16,7 +19,7 @@
         </div>
       </form>
       <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
-      <button @click="newUser" class="button">Je m'inscris</button>
+      <button @click="unregisterUser" class="button">Je m'inscris</button>
     </div>
     <div v-else>
       <form class="form">
@@ -43,7 +46,7 @@
           <div class="form-div">
             <input @click="signup" type="submit" value="Inscription" class="submit">
           </div>
-          <button @click="registeredUser" class="button">Déjà inscrit ?</button>
+          <button @click="registerUser" class="button">Déjà inscrit ?</button>
         </form>
     </div>
   </div>
@@ -58,7 +61,13 @@
       ...mapState(['pseudo', 'userSignup', 'userLogin', 'registered', 'connected'])
     },
     methods: {
-      ...mapActions(['newUser', 'registeredUser', 'signup', 'login']),
+      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'signup', 'login']),
+    },
+    beforeMount() {
+      if(localStorage.getItem('pseudo') !== null) {
+        this.showUser();
+        this.connectUser();
+      }
     }
   }
 </script>
