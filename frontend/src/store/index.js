@@ -6,11 +6,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    userLogin: {
-      pseudo: '',
-      password: ''
-    },
-    userSignup: {
+    user: {
       firstName: '',
       lastName: '',
       email: '',
@@ -35,13 +31,13 @@ export default new Vuex.Store({
       state.connected = false;
     },
     SHOW_USER(state) {
-      state.userLogin.pseudo = localStorage.getItem('pseudo');
+      state.user.pseudo = localStorage.getItem('pseudo');
     },
     DELETE_REQUEST(state) {
       state.deleteQuery = true;
     },
-    GET_PSEUDO(state) {
-      state.userLogin.pseudo = state.userSignup.pseudo;
+    CANCEL(state) {
+      state.deleteQuery = false;
     }
   },
   actions: {
@@ -62,17 +58,19 @@ export default new Vuex.Store({
     deleteRequest({ commit }) {
       commit('DELETE_REQUEST');
     },
+    cancelRequest({ commit }) {
+      commit('CANCEL');
+    },
     showUser({ commit }) {
       commit('SHOW_USER');
     },
     signup({ state, commit }, e) {
       e.preventDefault();
-      axios.post('/users/signup', state.userSignup)
+      axios.post('/users/signup', state.user)
         .then(response => {
           console.log(response);
-          commit('GET_PSEUDO');
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
-          localStorage.setItem('pseudo', state.pseudo);
+          localStorage.setItem('pseudo', state.user.pseudo);
           commit('REGISTERED');
           commit('CONNECTED');
         })
@@ -80,11 +78,11 @@ export default new Vuex.Store({
     },
     login({ state, commit }, e) {
       e.preventDefault();
-      axios.post('/users/login', state.userLogin)
+      axios.post('/users/login', { pseudo: state.user.pseudo, password: state.user.password })
         .then(response => {
           console.log(response);
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
-          localStorage.setItem('pseudo', state.userLogin.pseudo);
+          localStorage.setItem('pseudo', state.user.pseudo);
           commit('CONNECTED');
         })
         .catch(error => console.log(error));
@@ -94,13 +92,17 @@ export default new Vuex.Store({
       axios({
         method: 'DELETE',
         url: '/users',
-        data: state.userLogin
+        data: {
+          pseudo: state.user.pseudo,
+          password: state.user.password
+        }
       })
-        .then(response => console.log(response))
-        .catch(error => {
-          console.log(state.userLogin);
-          console.log(error)
-        });
+        .then(response => {
+          localStorage.clear();
+          state.connected = false;
+          console.log(response);
+        })
+        .catch(error => console.log(error));
     },
   },
   modules: {

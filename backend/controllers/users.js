@@ -29,7 +29,7 @@ exports.login = (req, res) => {
             if(user) {
                 res.status(200).json({ message: "Authentification réussie" });
             } else {
-                return res.status(401).json({ error: "Connexion refusée" });
+                res.status(401).json({ error: "Connexion refusée" });
             }
 
         })
@@ -39,7 +39,13 @@ exports.login = (req, res) => {
 // Suppression du compte
 exports.deleteAccount = (req, res) => {
     User.destroy({ where: { pseudo: req.body.pseudo, password: req.body.password } })
-        .then(() => res.status(200).json({ message: "Utilisateur supprimé de la base de données" }))
+        .then(user => {
+            if (user) {
+                res.status(200).json({ message: "Utilisateur supprimé de la base de données" });
+            } else {
+                res.status(401).json({ error: "Mot de passe erronné" });
+            }
+        })
         .catch(error => {
             console.log(req.body);
             res.status(400).json({ error })

@@ -1,79 +1,74 @@
 <template>
   <div class="account">
     <div v-if="registered && connected">
-      <p>Bonjour {{ userLogin.pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</p>
-      <button @click="disconnectUser" class="button">Déconnexion</button>
-      <button @click="deleteRequest" class="button">Supprimer mon compte</button>
-      <div v-if="deleteQuery">
-        <form class="form">
-          <div class="form-div">
-            <label for="confirmPassword"  class="confirmPassword" >Par mesure de sécurité, veuillez saisir votre mot de passe :</label><br>
-            <input v-model="userLogin.password" id="confirmPassword" class="confirmPassword" type="text" required><br>
-            <input @click="deleteUser" type="submit" value="Confirmer la suppression" class="submit confirmPassword">
-          </div>
-        </form>
-      </div>
+      <Dashboard
+        :pseudo="user.pseudo"
+        :deleteQuery="deleteQuery"
+        :disconnectUser="disconnectUser"
+        :deleteRequest="deleteRequest"
+        :cancelRequest="cancelRequest"
+        :deleteUser="deleteUser"
+        @updatePassword="setPassword"
+      />
     </div>
     <div v-else-if="registered && !connected">
-      <form class="form">
-        <div class="form-div">
-          <label for="pseudo">Pseudo :</label>
-          <input v-model="userLogin.pseudo" id="pseudo" type="text" required>
-        </div>
-        <div class="form-div">
-          <label for="password">Mot de passe :</label>
-          <input v-model="userLogin.password" id="password" type="text" required>
-        </div>
-        <div class="form-div">
-          <input @click="login" type="submit" value="Connexion" class="submit">
-        </div>
-      </form>
-      <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
-      <button @click="unregisterUser" class="button">Je m'inscris</button>
+      <Login
+        :login="login"
+        :unregisterUser="unregisterUser"
+        @updatePseudo="setPseudo"
+        @updatePassword="setPassword"
+      />
     </div>
     <div v-else>
-      <form class="form">
-        <div class="form-div">
-            <label for="nom">Nom :</label>
-            <input v-model="userSignup.lastName" id="nom" type="text" required>
-          </div>
-          <div class="form-div">
-            <label for="prenom">Prénom :</label>
-            <input v-model="userSignup.firstName" id="prenom" type="text" required>
-          </div>
-          <div class="form-div">
-            <label for="email">E-mail :</label>
-            <input v-model="userSignup.email" id="email" type="text" required>
-          </div>
-          <div class="form-div">
-            <label for="chosenPseudo">Choisissez un pseudo :</label>
-            <input v-model="userSignup.pseudo" id="chosenPseudo" type="text" required>
-          </div>
-          <div class="form-div">
-            <label for="chosenPassword">Choisissez un mot de passe :</label>
-            <input v-model="userSignup.password" id="chosenPassword" type="text" required>
-          </div>
-          <div class="form-div">
-            <input @click="signup" type="submit" value="Inscription" class="submit">
-          </div>
-          <button @click="registerUser" class="button">Déjà inscrit ?</button>
-        </form>
+      <Signup
+        :signup="signup"
+        :registerUser="registerUser"
+        @updateLastName="setLastName"
+        @updateFirstName="setFirstName"
+        @updateEmail="setEmail"
+        @updatePseudo="setPseudo"
+        @updatePassword="setPassword"
+      />
     </div>
   </div>
 </template>
 
 <script>
   import { mapState, mapActions } from 'vuex';
+  import Dashboard from '@/components/Dashboard.vue';
+  import Login from '@/components/Login.vue';
+  import Signup from '@/components/Signup.vue';
 
   export default {
     name: 'Account',
+    components: {
+      Dashboard,
+      Login,
+      Signup
+    },
     computed: {
-      ...mapState(['userLogin', 'userSignup', 'registered', 'connected', 'deleteQuery'])
+      ...mapState(['user', 'registered', 'connected', 'deleteQuery'])
     },
     methods: {
-      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'deleteRequest','deleteUser', 'signup', 'login']),
+      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'deleteRequest','cancelRequest', 'deleteUser', 'signup', 'login']),
+      setLastName(lastName) {
+        this.user.lastName = lastName;
+      },
+      setFirstName(firstName) {
+        this.user.firstName = firstName;
+      },
+      setEmail(email) {
+        this.user.email = email;
+      },
+      setPseudo(pseudo) {
+        this.user.pseudo = pseudo;
+      },
+      setPassword(password) {
+        this.user.password = password;
+      }
     },
     beforeMount() {
+      this.cancelRequest();
       if(localStorage.getItem('pseudo') !== null) {
         this.showUser();
         this.connectUser();
