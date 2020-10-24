@@ -34,4 +34,14 @@ exports.login = (req, res) => {
 
         })
         .catch(error => res.status(500).json({ error }))
-}
+};
+
+// Suppression du compte
+exports.deleteAccount = (req, res) => {
+    User.destroy({ where: { pseudo: req.body.pseudo, password: req.body.password } })
+        .then(() => res.status(200).json({ message: "Utilisateur supprimé de la base de données" }))
+        .catch(error => {
+            console.log(req.body);
+            res.status(400).json({ error })
+        });
+};

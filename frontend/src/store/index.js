@@ -6,7 +6,10 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    pseudo: '',
+    userLogin: {
+      pseudo: '',
+      password: ''
+    },
     userSignup: {
       firstName: '',
       lastName: '',
@@ -14,12 +17,9 @@ export default new Vuex.Store({
       pseudo: '',
       password: ''
     },
-    userLogin: {
-      pseudo: '',
-      password: ''
-    },
     connected: false,
-    registered: true
+    registered: true,
+    deleteQuery: false
   },
   mutations: {
     REGISTERED(state) {
@@ -35,13 +35,13 @@ export default new Vuex.Store({
       state.connected = false;
     },
     SHOW_USER(state) {
-      state.pseudo = localStorage.getItem('pseudo');
+      state.userLogin.pseudo = localStorage.getItem('pseudo');
     },
-    CHANGE_PSEUDO_SIGNUP(state) {
-      state.pseudo = state.userSignup.pseudo;
+    DELETE_REQUEST(state) {
+      state.deleteQuery = true;
     },
-    CHANGE_PSEUDO_LOGIN(state) {
-      state.pseudo = state.userLogin.pseudo;
+    GET_PSEUDO(state) {
+      state.userLogin.pseudo = state.userSignup.pseudo;
     }
   },
   actions: {
@@ -59,6 +59,9 @@ export default new Vuex.Store({
       localStorage.clear();
       location.reload();
     },
+    deleteRequest({ commit }) {
+      commit('DELETE_REQUEST');
+    },
     showUser({ commit }) {
       commit('SHOW_USER');
     },
@@ -67,7 +70,7 @@ export default new Vuex.Store({
       axios.post('/users/signup', state.userSignup)
         .then(response => {
           console.log(response);
-          commit('CHANGE_PSEUDO_SIGNUP');
+          commit('GET_PSEUDO');
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
           localStorage.setItem('pseudo', state.pseudo);
           commit('REGISTERED');
@@ -80,13 +83,25 @@ export default new Vuex.Store({
       axios.post('/users/login', state.userLogin)
         .then(response => {
           console.log(response);
-          commit('CHANGE_PSEUDO_LOGIN');
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
-          localStorage.setItem('pseudo', state.pseudo);
+          localStorage.setItem('pseudo', state.userLogin.pseudo);
           commit('CONNECTED');
         })
         .catch(error => console.log(error));
-    }
+    },
+    deleteUser({ state }, e) {
+      e.preventDefault();
+      axios({
+        method: 'DELETE',
+        url: '/users',
+        data: state.userLogin
+      })
+        .then(response => console.log(response))
+        .catch(error => {
+          console.log(state.userLogin);
+          console.log(error)
+        });
+    },
   },
   modules: {
   }

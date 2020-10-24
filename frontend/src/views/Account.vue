@@ -1,8 +1,18 @@
 <template>
   <div class="account">
     <div v-if="registered && connected">
-      <p>Bonjour {{ pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</p>
+      <p>Bonjour {{ userLogin.pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</p>
       <button @click="disconnectUser" class="button">Déconnexion</button>
+      <button @click="deleteRequest" class="button">Supprimer mon compte</button>
+      <div v-if="deleteQuery">
+        <form class="form">
+          <div class="form-div">
+            <label for="confirmPassword"  class="confirmPassword" >Par mesure de sécurité, veuillez saisir votre mot de passe :</label><br>
+            <input v-model="userLogin.password" id="confirmPassword" class="confirmPassword" type="text" required><br>
+            <input @click="deleteUser" type="submit" value="Confirmer la suppression" class="submit confirmPassword">
+          </div>
+        </form>
+      </div>
     </div>
     <div v-else-if="registered && !connected">
       <form class="form">
@@ -58,10 +68,10 @@
   export default {
     name: 'Account',
     computed: {
-      ...mapState(['pseudo', 'userSignup', 'userLogin', 'registered', 'connected'])
+      ...mapState(['userLogin', 'userSignup', 'registered', 'connected', 'deleteQuery'])
     },
     methods: {
-      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'signup', 'login']),
+      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'deleteRequest','deleteUser', 'signup', 'login']),
     },
     beforeMount() {
       if(localStorage.getItem('pseudo') !== null) {
@@ -76,19 +86,26 @@
 .form {
   margin-bottom: 50px;
 }
+
 .form-div {
   margin: 20px;
   & label {
     display: inline-block;
     width: 130px;
   }
+  & .confirmPassword {
+    display: inline;
+    margin-top: 10px;
+  }
   & .submit {
     font-size: 1rem;
     cursor: pointer;
   }
 }
+
 .button {
   font-size: 0.85rem;
+  margin: 20px;
   cursor: pointer;
 }
 </style>
