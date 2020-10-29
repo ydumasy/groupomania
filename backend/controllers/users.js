@@ -16,7 +16,10 @@ exports.signup = (req, res) => {
 
     User.create(user)
         .then(() => res.status(201).json({ message: "Nouvel utilisateur créé" }))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => {
+            console.log(error);
+            res.status(400).json({ error })
+        });
 };
 
 // Connexion de l'utilisateur à son compte

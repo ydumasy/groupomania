@@ -2,7 +2,8 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">Accueil</router-link> |
-      <router-link to="/account">Mon Compte</router-link>
+      <router-link to="/account">Mon Compte</router-link> |
+      <router-link to="/forum">Forum</router-link>
     </div>
     <router-view/>
   </div>

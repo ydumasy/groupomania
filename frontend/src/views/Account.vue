@@ -5,7 +5,7 @@
         :pseudo="user.pseudo"
         :deleteQuery="deleteQuery"
         :disconnectUser="disconnectUser"
-        :deleteRequest="deleteRequest"
+        :getDeleteRequest="getDeleteRequest"
         :cancelRequest="cancelRequest"
         :deleteUser="deleteUser"
         @updatePassword="setPassword"
@@ -15,6 +15,8 @@
       <Login
         :login="login"
         :unregisterUser="unregisterUser"
+        :keepUserConnected="keepUserConnected"
+        :msgError="msgError"
         @updatePseudo="setPseudo"
         @updatePassword="setPassword"
       />
@@ -23,6 +25,8 @@
       <Signup
         :signup="signup"
         :registerUser="registerUser"
+        :keepUserConnected="keepUserConnected"
+        :msgError="msgError"
         @updateLastName="setLastName"
         @updateFirstName="setFirstName"
         @updateEmail="setEmail"
@@ -47,10 +51,10 @@
       Signup
     },
     computed: {
-      ...mapState(['user', 'registered', 'connected', 'deleteQuery'])
+      ...mapState(['user', 'registered', 'connected', 'msgError', 'deleteQuery'])
     },
     methods: {
-      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'deleteRequest','cancelRequest', 'deleteUser', 'signup', 'login']),
+      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'keepUserConnected', 'getDeleteRequest','cancelRequest', 'deleteUser', 'signup', 'login']),
       setLastName(lastName) {
         this.user.lastName = lastName;
       },
@@ -69,7 +73,7 @@
     },
     beforeMount() {
       this.cancelRequest();
-      if(localStorage.getItem('pseudo') !== null) {
+      if(localStorage.getItem('pseudo') !== null || sessionStorage.getItem('pseudo') !== null) {
         this.showUser();
         this.connectUser();
       }
@@ -84,15 +88,15 @@
 
 .form-div {
   margin: 20px;
-  & label {
+  label {
     display: inline-block;
     width: 130px;
   }
-  & .confirmPassword {
+  .confirmPassword {
     display: inline;
     margin-top: 10px;
   }
-  & .submit {
+  .submit {
     font-size: 1rem;
     cursor: pointer;
   }
@@ -102,5 +106,9 @@
   font-size: 0.85rem;
   margin: 20px;
   cursor: pointer;
+}
+
+.error {
+  font-size: 0.85rem;
 }
 </style>

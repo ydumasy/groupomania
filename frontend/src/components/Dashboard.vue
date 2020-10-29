@@ -2,13 +2,13 @@
   <div>
     <p>Bonjour {{ pseudo }}, vous êtes désormais connecté.<br>Vous pouvez dès à présent vous rendre sur le forum afin d'échanger avec vos collègues en toute convivialité !</p>
     <button @click="disconnectUser" class="button">Déconnexion</button>
-    <button @click="deleteRequest" class="button">Supprimer mon compte</button>
+    <button @click="getDeleteRequest" class="button">Supprimer mon compte</button>
     <div v-if="deleteQuery">
       <form class="form">
         <div class="form-div">
           <label for="confirmPassword"  class="confirmPassword" >Par mesure de sécurité, veuillez saisir votre mot de passe :</label><br>
-          <input @keyup='updatePassword' v-model="password" id="confirmPassword" class="confirmPassword" type="text" required><br>
-          <input @click="deleteUser" type="submit" value="Confirmer la suppression" class="confirmPassword">
+          <input type="text" @keyup='updatePassword' v-model="password" id="confirmPassword" class="confirmPassword" required><br>
+          <input type="submit" @click="deleteUser" value="Confirmer la suppression" class="confirmPassword">
           <button @click="cancelRequest" class="button">Annuler</button>
         </div>
       </form>
@@ -32,7 +32,7 @@
         type: Function,
         required: true
       },
-      deleteRequest: {
+      getDeleteRequest: {
         type: Function,
         required: true
       },

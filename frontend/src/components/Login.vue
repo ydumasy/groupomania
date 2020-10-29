@@ -3,18 +3,25 @@
     <form class="form">
       <div class="form-div">
         <label for="pseudo">Pseudo :</label>
-        <input @keyup="updatePseudo" v-model="pseudo" id="pseudo" type="text" required>
+        <input type="text"  @keyup="updatePseudo" v-model="pseudo" id="pseudo" required>
       </div>
       <div class="form-div">
         <label for="password">Mot de passe :</label>
-        <input @keyup="updatePassword" v-model="password" id="password" type="text" required>
+        <input type="text" @keyup="updatePassword" v-model="password" id="password" required>
       </div>
       <div class="form-div">
-        <input @click="login" type="submit" value="Connexion" class="submit">
+        <input type="checkbox" @change="keepUserConnected" id="keepConnexion">
+        <label for="keepConnexion">Rester connecté</label>
+      </div>
+      <div class="form-div">
+        <input type="submit" @click="login" value="Connexion" class="submit">
       </div>
     </form>
+    <div v-if="msgError">
+      <p class="error">Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.</p>
+    </div>
     <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
-    <button @click="unregisterUser" class="button">Je m'inscris</button>
+    <button @click="unregisterUser">Je m'inscris</button>
   </div>
 </template>
 
@@ -29,6 +36,14 @@
       unregisterUser: {
         type: Function,
         required: true
+      },
+      keepUserConnected: {
+        type: Function,
+        required: true
+      },
+      msgError: {
+        type: Boolean,
+        default: false
       }
     },
     data() {

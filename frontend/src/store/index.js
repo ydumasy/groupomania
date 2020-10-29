@@ -15,6 +15,8 @@ export default new Vuex.Store({
     },
     connected: false,
     registered: true,
+    msgError: false,
+    keepConnexion: false,
     deleteQuery: false
   },
   mutations: {
@@ -30,10 +32,23 @@ export default new Vuex.Store({
     DISCONNECTED(state) {
       state.connected = false;
     },
-    SHOW_USER(state) {
-      state.user.pseudo = localStorage.getItem('pseudo');
+    GET_ERROR(state) {
+      state.msgError = true;
     },
-    DELETE_REQUEST(state) {
+    HIDE_ERROR(state) {
+      state.msgError = false;
+    },
+    SHOW_USER(state) {
+      if (localStorage.getItem('pseudo') !== null) {
+        state.user.pseudo = localStorage.getItem('pseudo');
+      } else {
+        state.user.pseudo = sessionStorage.getItem('pseudo');
+      }
+    },
+    KEEP_USER_CONNECTED(state) {
+      state.keepConnexion = true;
+    },
+    GET_DELETE_REQUEST(state) {
       state.deleteQuery = true;
     },
     CANCEL(state) {
@@ -42,21 +57,28 @@ export default new Vuex.Store({
   },
   actions: {
     registerUser({ commit }) {
+      commit('HIDE_ERROR');
       commit('REGISTERED');
     },
     unregisterUser({ commit }) {
+      commit('HIDE_ERROR');
       commit('UNREGISTERED');
     },
     connectUser({ commit }) {
       commit('CONNECTED');
     },
-    disconnectUser({ commit }) {
+    disconnectUser({ state, commit }) {
       commit('DISCONNECTED');
       localStorage.clear();
+      sessionStorage.clear();
+      state.keepConnexion = false;
       location.reload();
     },
-    deleteRequest({ commit }) {
-      commit('DELETE_REQUEST');
+    keepUserConnected({ commit }) {
+      commit('KEEP_USER_CONNECTED');
+    },
+    getDeleteRequest({ commit }) {
+      commit('GET_DELETE_REQUEST');
     },
     cancelRequest({ commit }) {
       commit('CANCEL');
@@ -70,11 +92,18 @@ export default new Vuex.Store({
         .then(response => {
           console.log(response);
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
-          localStorage.setItem('pseudo', state.user.pseudo);
+          if (state.keepConnexion === true) {
+            localStorage.setItem('pseudo', state.user.pseudo);
+          } else {
+            sessionStorage.setItem('pseudo', state.user.pseudo);
+          }
           commit('REGISTERED');
           commit('CONNECTED');
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          commit('GET_ERROR');
+          console.log(error)
+        });
     },
     login({ state, commit }, e) {
       e.preventDefault();
@@ -82,12 +111,19 @@ export default new Vuex.Store({
         .then(response => {
           console.log(response);
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
-          localStorage.setItem('pseudo', state.user.pseudo);
+          if (state.keepConnexion === true) {
+            localStorage.setItem('pseudo', state.user.pseudo);
+          } else {
+            sessionStorage.setItem('pseudo', state.user.pseudo);
+          }
           commit('CONNECTED');
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          commit('GET_ERROR');
+          console.log(error)
+        });
     },
-    deleteUser({ state }, e) {
+    deleteUser({ state, commit }, e) {
       e.preventDefault();
       axios({
         method: 'DELETE',
@@ -99,12 +135,13 @@ export default new Vuex.Store({
       })
         .then(response => {
           localStorage.clear();
-          state.connected = false;
+          sessionStorage.clear();
+          commit('DISCONNECTED');
+          state.keepConnexion = false;
+          commit('CANCEL');
           console.log(response);
         })
         .catch(error => console.log(error));
     },
-  },
-  modules: {
   }
 })
