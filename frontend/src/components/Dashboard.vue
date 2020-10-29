@@ -9,7 +9,7 @@
           <label for="confirmPassword"  class="confirmPassword" >Par mesure de sécurité, veuillez saisir votre mot de passe :</label><br>
           <input type="text" @keyup='updatePassword' v-model="password" id="confirmPassword" class="confirmPassword" required><br>
           <input type="submit" @click="deleteUser" value="Confirmer la suppression" class="confirmPassword">
-          <button @click="cancelRequest" class="button">Annuler</button>
+          <button @click="cancelDeleteRequest" class="button">Annuler</button>
         </div>
       </form>
     </div>
@@ -36,7 +36,7 @@
         type: Function,
         required: true
       },
-      cancelRequest: {
+      cancelDeleteRequest: {
         type: Function,
         required: true
       },

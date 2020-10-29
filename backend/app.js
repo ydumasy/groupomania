@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const usersRoutes = require('./routes/users');
+const articlesRoutes = require('./routes/articles')
 
 // Création de l'application Express
 const app = express();
@@ -21,5 +22,6 @@ app.get('/', (req, res) => {
     res.json({ message: "L'application Express fonctionne" });
 });
 app.use('/api/users', usersRoutes);
+app.use('/api/articles', articlesRoutes);
 
 module.exports = app;

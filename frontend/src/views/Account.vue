@@ -6,7 +6,7 @@
         :deleteQuery="deleteQuery"
         :disconnectUser="disconnectUser"
         :getDeleteRequest="getDeleteRequest"
-        :cancelRequest="cancelRequest"
+        :cancelDeleteRequest="cancelDeleteRequest"
         :deleteUser="deleteUser"
         @updatePassword="setPassword"
       />
@@ -54,7 +54,7 @@
       ...mapState(['user', 'registered', 'connected', 'msgError', 'deleteQuery'])
     },
     methods: {
-      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'keepUserConnected', 'getDeleteRequest','cancelRequest', 'deleteUser', 'signup', 'login']),
+      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'keepUserConnected', 'getDeleteRequest','cancelDeleteRequest', 'deleteUser', 'signup', 'login']),
       setLastName(lastName) {
         this.user.lastName = lastName;
       },
@@ -72,7 +72,7 @@
       }
     },
     beforeMount() {
-      this.cancelRequest();
+      this.cancelDeleteRequest();
       if(localStorage.getItem('pseudo') !== null || sessionStorage.getItem('pseudo') !== null) {
         this.showUser();
         this.connectUser();
@@ -87,18 +87,9 @@
 }
 
 .form-div {
-  margin: 20px;
-  label {
-    display: inline-block;
-    width: 130px;
-  }
   .confirmPassword {
     display: inline;
     margin-top: 10px;
-  }
-  .submit {
-    font-size: 1rem;
-    cursor: pointer;
   }
 }
 

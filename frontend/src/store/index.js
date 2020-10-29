@@ -17,7 +17,13 @@ export default new Vuex.Store({
     registered: true,
     msgError: false,
     keepConnexion: false,
-    deleteQuery: false
+    deleteQuery: false,
+
+    article: {
+      title: '',
+      content: ''
+    },
+    publication: false
   },
   mutations: {
     REGISTERED(state) {
@@ -48,11 +54,18 @@ export default new Vuex.Store({
     KEEP_USER_CONNECTED(state) {
       state.keepConnexion = true;
     },
-    GET_DELETE_REQUEST(state) {
+    DELETE_REQUEST(state) {
       state.deleteQuery = true;
     },
-    CANCEL(state) {
+    CANCEL_DELETE_REQUEST(state) {
       state.deleteQuery = false;
+    },
+
+    GET_PUBLISH_REQUEST(state) {
+      state.publication = true;
+    },
+    CANCEL_PUBLISH_REQUEST(state) {
+      state.publication = false;
     }
   },
   actions: {
@@ -78,10 +91,10 @@ export default new Vuex.Store({
       commit('KEEP_USER_CONNECTED');
     },
     getDeleteRequest({ commit }) {
-      commit('GET_DELETE_REQUEST');
+      commit('DELETE_REQUEST');
     },
-    cancelRequest({ commit }) {
-      commit('CANCEL');
+    cancelDeleteRequest({ commit }) {
+      commit('CANCEL_DELETE_REQUEST');
     },
     showUser({ commit }) {
       commit('SHOW_USER');
@@ -143,5 +156,30 @@ export default new Vuex.Store({
         })
         .catch(error => console.log(error));
     },
+
+    newArticle({ state, commit }) {
+      if (state.connected) commit('GET_PUBLISH_REQUEST');
+    },
+    publish({ state, commit }, e) {
+      e.preventDefault();
+      axios.post('/articles', {
+        title: state.article.title,
+        content: state.article.content,
+        author: state.user.pseudo
+      })
+        .then(response => {
+          console.log(response);
+          alert("Votre article a été publié avec succès");
+          commit('CANCEL_PUBLISH_REQUEST');
+          state.article.title = '';
+          state.article.content= '';
+        })
+        .catch(error => console.log(error));
+    },
+    cancelPublishRequest({ commit }) {
+      if (confirm("Attention, vos modifications seront perdues. Continuer ?")) {
+        commit('CANCEL_PUBLISH_REQUEST');
+      }
+    }
   }
 })

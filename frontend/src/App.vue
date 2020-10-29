@@ -30,4 +30,16 @@
     }
   }
 }
+
+.form-div {
+  margin: 20px;
+  label {
+    display: inline-block;
+    width: 130px;
+  }
+  .submit {
+    font-size: 1rem;
+    cursor: pointer;
+  }
+}
 </style>
