@@ -24,8 +24,10 @@ export default new Vuex.Store({
       content: ''
     },
     userArticles: [],
+    lastArticles: [],
     publication: false,
-    userPublications: false
+    userPublications: false,
+    findLastArticles: false
   },
   mutations: {
     REGISTERED(state) {
@@ -74,6 +76,12 @@ export default new Vuex.Store({
     },
     HIDE_USER_PUBLICATIONS(state) {
       state.userPublications = false;
+    },
+    SHOW_LAST_ARTICLES(state) {
+      state.findLastArticles = true;
+    },
+    HIDE_LAST_ARTICLES(state) {
+      state.findLastArticles = false;
     }
   },
   actions: {
@@ -165,9 +173,15 @@ export default new Vuex.Store({
         .catch(error => console.log(error));
     },
 
+    newPage({ commit }) {
+      commit('CANCEL_PUBLISH_REQUEST');
+      commit('HIDE_USER_PUBLICATIONS');
+      commit('HIDE_LAST_ARTICLES');
+    },
     newArticle({ state, commit }) {
       if (state.connected) {
         commit('HIDE_USER_PUBLICATIONS');
+        commit('HIDE_LAST_ARTICLES');
         commit('GET_PUBLISH_REQUEST');
       }
     },
@@ -205,6 +219,7 @@ export default new Vuex.Store({
           state.userArticles.splice(0, state.userArticles.length);
           for (let article of articles) state.userArticles.push({ title: article.title, content: article.content });
           commit('CANCEL_PUBLISH_REQUEST');
+          commit('HIDE_LAST_ARTICLES');
           commit('SHOW_USER_PUBLICATIONS');
         })
         .catch(error => {
@@ -230,10 +245,27 @@ export default new Vuex.Store({
             dispatch('showUserArticles');
           })
           .catch(error => {
-            console.log(error);
             alert("Une erreur est survenue");
+            console.log(error);
           });
       }
+    },
+    readLastArticles({ state, commit }) {
+      axios.get('/articles')
+        .then(sqlDatas => {
+          let jsonDatas = JSON.stringify(sqlDatas);
+          let globalDatas = JSON.parse(jsonDatas);
+          let articles = globalDatas.data.articles;
+          state.lastArticles.splice(0, state.lastArticles.length);
+          for (let article of articles) state.lastArticles.push({ title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: article.content });
+          commit('CANCEL_PUBLISH_REQUEST');
+          commit('HIDE_USER_PUBLICATIONS');
+          commit('SHOW_LAST_ARTICLES');
+        })
+        .catch(error => {
+          alert("Aucun article disponible");
+          console.log(error)
+        });
     }
   }
 })

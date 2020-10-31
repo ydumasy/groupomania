@@ -1,4 +1,18 @@
+const sequelize = require('sequelize');
 const Article = require('../models/Article');
+
+exports.getLastArticles = (req, res) => {
+    Article.findAll({ 
+        where: sequelize.where(sequelize.fn('DATE', sequelize.col('createdAt')), {
+            [sequelize.Op.between]: [
+                sequelize.fn('SUBDATE', sequelize.fn('NOW'), 10),
+                sequelize.fn('NOW')
+            ]
+        })
+    })
+        .then(articles => res.status(200).json({ articles }))
+        .catch(error => res.status(400).json({ error }));
+};
 
 exports.getArticlesByAuthor = (req, res) => {
     Article.findAll({ where: { author: req.params.author } })
