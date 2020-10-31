@@ -23,7 +23,9 @@ export default new Vuex.Store({
       title: '',
       content: ''
     },
-    publication: false
+    userArticles: [],
+    publication: false,
+    userPublications: false
   },
   mutations: {
     REGISTERED(state) {
@@ -66,6 +68,12 @@ export default new Vuex.Store({
     },
     CANCEL_PUBLISH_REQUEST(state) {
       state.publication = false;
+    },
+    SHOW_USER_PUBLICATIONS(state) {
+      state.userPublications = true;
+    },
+    HIDE_USER_PUBLICATIONS(state) {
+      state.userPublications = false;
     }
   },
   actions: {
@@ -158,7 +166,10 @@ export default new Vuex.Store({
     },
 
     newArticle({ state, commit }) {
-      if (state.connected) commit('GET_PUBLISH_REQUEST');
+      if (state.connected) {
+        commit('HIDE_USER_PUBLICATIONS');
+        commit('GET_PUBLISH_REQUEST');
+      }
     },
     publish({ state, commit }, e) {
       e.preventDefault();
@@ -179,6 +190,49 @@ export default new Vuex.Store({
     cancelPublishRequest({ commit }) {
       if (confirm("Attention, vos modifications seront perdues. Continuer ?")) {
         commit('CANCEL_PUBLISH_REQUEST');
+      }
+    },
+    showUserArticles({ state, commit }) {
+      const author = state.user.pseudo
+      axios({
+        method: 'GET',
+        url: '/articles/' + author
+      })
+        .then(sqlDatas => {
+          let jsonDatas = JSON.stringify(sqlDatas);
+          let globalDatas = JSON.parse(jsonDatas);
+          let articles = globalDatas.data.articles;
+          state.userArticles.splice(0, state.userArticles.length);
+          for (let article of articles) state.userArticles.push({ title: article.title, content: article.content });
+          commit('CANCEL_PUBLISH_REQUEST');
+          commit('SHOW_USER_PUBLICATIONS');
+        })
+        .catch(error => {
+          alert("Aucun article trouvé");
+          commit('HIDE_USER_PUBLICATIONS');
+          console.log(error)
+        });
+    },
+    deleteArticle({ state, dispatch }, article) {
+      if (confirm("Êtes-vous sûr de vouloir supprimer votre article ?")) {
+        axios({
+          method: 'DELETE',
+          url: '/articles',
+          data: {
+            title: article.title,
+            content: article.content,
+            author: state.user.pseudo
+          }
+        })
+          .then(response => {
+            console.log(response);
+            alert("Votre article a bien été supprimé");
+            dispatch('showUserArticles');
+          })
+          .catch(error => {
+            console.log(error);
+            alert("Une erreur est survenue");
+          });
       }
     }
   }
