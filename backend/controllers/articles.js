@@ -8,21 +8,23 @@ exports.getLastArticles = (req, res) => {
                 sequelize.fn('SUBDATE', sequelize.fn('NOW'), 10),
                 sequelize.fn('NOW')
             ]
-        })
+        }),
+        order: [
+            ['createdAt', 'DESC']
+        ]
     })
         .then(articles => res.status(200).json({ articles }))
-        .catch(error => res.status(400).json({ error }));
+        .catch(error => res.status(500).json({ error }));
 };
 
 exports.getArticlesByAuthor = (req, res) => {
-    Article.findAll({ where: { author: req.params.author } })
-        .then(articles => {
-            if (articles.length > 0) {
-                res.status(200).json({ articles });
-            } else {
-                return res.status(400).json({ error: "Aucun article trouvé" })
-            }     
-        })
+    Article.findAll({ 
+        where: { author: req.params.author },
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    })
+        .then(articles => res.status(200).json({ articles }))
         .catch(error => res.status(500).json({ error }));
 };
 
@@ -47,12 +49,6 @@ exports.createArticle = (req, res) => {
 
 exports.deleteArticle = (req, res) => {
     Article.destroy({ where: { title: req.body.title, content: req.body.content, author: req.body.author } })
-        .then(article => {
-            if (article) {
-                res.status(200).json({ message: "Article supprimé" });
-            } else {
-                return res.status(400).json({ error: "Aucun article trouvé" });
-            }
-        })
+        .then(() => res.status(200).json({ message: "Article supprimé" }))
         .catch(error => res.status(500).json({ error }));
 };

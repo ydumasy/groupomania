@@ -93,12 +93,6 @@
   }
 }
 
-.button {
-  font-size: 0.85rem;
-  margin: 20px;
-  cursor: pointer;
-}
-
 .error {
   font-size: 0.85rem;
 }

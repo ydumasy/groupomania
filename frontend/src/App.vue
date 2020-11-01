@@ -42,4 +42,10 @@
     cursor: pointer;
   }
 }
+
+.button {
+  font-size: 0.85rem;
+  margin: 20px;
+  cursor: pointer;
+}
 </style>

@@ -27,12 +27,13 @@ exports.login = (req, res) => {
     if (!req.body.pseudo || !req.body.password) {
         return res.status(400).json({ error: "Tous les champs doivent être remplis" });
     }
+    
     User.findOne({ where: { pseudo: req.body.pseudo, password: req.body.password } })
         .then(user => {
             if(user) {
                 res.status(200).json({ message: "Authentification réussie" });
             } else {
-                res.status(401).json({ error: "Connexion refusée" });
+                return res.status(401).json({ error: "Connexion refusée" });
             }
 
         })

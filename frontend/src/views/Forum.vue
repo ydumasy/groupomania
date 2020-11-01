@@ -23,18 +23,41 @@
     </div>
 
     <div v-if="userPublications && connected">
-      <div v-for="item in userArticles" :key="item.title" class="user-articles">
+      <div v-for="item in userArticles" :key="item.id" class="articles">
         <h1>{{ item.title }}</h1>
         <p>{{ item.content }}</p>
         <button @click="deleteArticle(item)">Supprimer</button>
       </div>
     </div>
 
-    <div v-if="findLastArticles">
-      <div v-for="item in lastArticles" :key="item.title">
+    <div v-if="findLastArticles && connected">
+      <div v-for="item in lastArticles" :key="item.id" class="articles">
         <h1>{{ item.title }}</h1>
         <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
         <p>{{ item.content }}</p>
+        <button class="button" @click="showComments(item)">Voir les commentaires</button>
+        <div v-if="item.getComments">
+          <div v-for="item in comments" :key="item.id">
+            <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
+            <p>{{ item.content }}</p>
+          </div>
+          <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
+        </div>
+        <div v-if="item.noComment">
+          <p>Aucun commentaire</p>
+          <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
+        </div>
+        <div v-if="item.newComment">
+          <form>
+            <div class="form-div">          
+              <label for="comment">Votre commentaire :</label><br>
+              <textarea id="comment" v-model="comment.content" rows="10" cols="50" maxlength="10000"></textarea>
+            </div>
+            <div class="form-div">
+              <input type="submit" value="Poster" class="submit" @click.prevent="addComment(item)">
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -46,10 +69,13 @@
   export default {
     name: 'Forum',
     computed: {
-      ...mapState(['article', 'userArticles', 'lastArticles', 'publication', 'userPublications', 'findLastArticles', 'connected'])
+      ...mapState(['article', 'comment', 'userArticles', 'lastArticles', 'comments', 'publication', 'userPublications', 'findLastArticles', 'getComments', 'connected'])
     },
     methods: {
-      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle', 'readLastArticles', 'connectUser', 'showUser'])
+      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle', 'readLastArticles', 'showComments', 'addComment', 'connectUser', 'showUser']),
+      newComment(article) {
+        article.newComment = true;
+      }
     },
     beforeMount() {
       if(localStorage.getItem('pseudo') !== null || sessionStorage.getItem('pseudo') !== null) {
@@ -65,9 +91,10 @@
 .forum-btn {
   font-size: 1rem;
   margin: 10px 20px;
+  cursor: pointer;
 }
 
-.user-articles {
+.articles {
   margin: 40px;
 }
 </style>

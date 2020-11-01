@@ -23,11 +23,15 @@ export default new Vuex.Store({
       title: '',
       content: ''
     },
+    comment: {
+      content: ''
+    },
     userArticles: [],
     lastArticles: [],
+    comments: [],
     publication: false,
     userPublications: false,
-    findLastArticles: false
+    findLastArticles: false,
   },
   mutations: {
     REGISTERED(state) {
@@ -202,31 +206,22 @@ export default new Vuex.Store({
         .catch(error => console.log(error));
     },
     cancelPublishRequest({ commit }) {
-      if (confirm("Attention, vos modifications seront perdues. Continuer ?")) {
-        commit('CANCEL_PUBLISH_REQUEST');
-      }
+      commit('CANCEL_PUBLISH_REQUEST');
     },
     showUserArticles({ state, commit }) {
-      const author = state.user.pseudo
-      axios({
-        method: 'GET',
-        url: '/articles/' + author
-      })
+      axios.get('/articles/' + state.user.pseudo)
         .then(sqlDatas => {
           let jsonDatas = JSON.stringify(sqlDatas);
           let globalDatas = JSON.parse(jsonDatas);
           let articles = globalDatas.data.articles;
+          if (articles.length === 0) return alert("Aucun article trouvé");
           state.userArticles.splice(0, state.userArticles.length);
-          for (let article of articles) state.userArticles.push({ title: article.title, content: article.content });
+          for (let article of articles) state.userArticles.push({ id: article.id, title: article.title, content: article.content });
           commit('CANCEL_PUBLISH_REQUEST');
           commit('HIDE_LAST_ARTICLES');
           commit('SHOW_USER_PUBLICATIONS');
         })
-        .catch(error => {
-          alert("Aucun article trouvé");
-          commit('HIDE_USER_PUBLICATIONS');
-          console.log(error)
-        });
+        .catch(error => console.log(error));
     },
     deleteArticle({ state, dispatch }, article) {
       if (confirm("Êtes-vous sûr de vouloir supprimer votre article ?")) {
@@ -256,16 +251,46 @@ export default new Vuex.Store({
           let jsonDatas = JSON.stringify(sqlDatas);
           let globalDatas = JSON.parse(jsonDatas);
           let articles = globalDatas.data.articles;
+          if (articles.length === 0) return alert("Aucun article disponible");
           state.lastArticles.splice(0, state.lastArticles.length);
-          for (let article of articles) state.lastArticles.push({ title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: article.content });
+          for (let article of articles) state.lastArticles.push({ id: article.id, title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: article.content, getComments: false, noComment: false, newComment: false });
           commit('CANCEL_PUBLISH_REQUEST');
           commit('HIDE_USER_PUBLICATIONS');
           commit('SHOW_LAST_ARTICLES');
         })
-        .catch(error => {
-          alert("Aucun article disponible");
-          console.log(error)
-        });
+        .catch(error => console.log(error));
+    },
+    showComments({ state }, article) {
+      axios.get('/comments/' + article.id)
+        .then(sqlDatas => {
+          let jsonDatas = JSON.stringify(sqlDatas);
+          let globalDatas = JSON.parse(jsonDatas);
+          let comments = globalDatas.data.comments;
+          state.comments.splice(0, state.comments.length);
+          for (let article of state.lastArticles) {
+            article.getComments = false;
+            article.noComment = false;
+            article.newComment = false;
+          }
+          if (comments.length === 0) return article.noComment = true;
+          for (let comment of comments) state.comments.push({ id: comment.id, author: comment.author, date: comment.createdAt.split('T')[0], content: comment.content });
+          article.getComments = true;
+        })
+        .catch(error => console.log(error));
+    },
+    addComment({ state, dispatch }, article) {
+      axios.post('/comments', {
+        author: state.user.pseudo,
+        content: state.comment.content,
+        article_id: article.id
+      })
+        .then(response => {
+          console.log(response);
+          alert('Votre commentaire a bien été ajouté');
+          article.newComment = false,
+          dispatch('showComments', article);
+        })
+        .catch(error => console.log(error));
     }
   }
 })
