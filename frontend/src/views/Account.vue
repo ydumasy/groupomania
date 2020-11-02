@@ -37,9 +37,9 @@
 
 <script>
   import { mapState, mapActions } from 'vuex';
-  import Dashboard from '@/components/Dashboard.vue';
-  import Login from '@/components/Login.vue';
-  import Signup from '@/components/Signup.vue';
+  import Dashboard from '@/components/account/Dashboard.vue';
+  import Login from '@/components/account/Login.vue';
+  import Signup from '@/components/account/Signup.vue';
 
   export default {
     name: 'Account',

@@ -37,10 +37,6 @@
       keepUserConnected: {
         type: Function,
         required: true
-      },
-      msgError: {
-        type: Boolean,
-        default: false
       }
     },
     data() {

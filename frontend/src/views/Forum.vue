@@ -6,68 +6,47 @@
     <button class="forum-btn" @click="readLastArticles">Lire les derniers articles</button>
 
     <div v-if="publication && connected">
-      <form>
-        <div class="form-div">
-          <label for="title">Titre :</label><br>
-          <input type="text" v-model="article.title" id="title">
-        </div>
-        <div class="form-div">
-          <label for="content">Contenu :</label><br>
-          <textarea id="content" v-model="article.content" rows="20" cols="100" maxlength="20000"></textarea>
-        </div>
-        <div class="form-div">
-          <input type="submit" value="Publier" class="submit" @click="publish">
-        </div>
-      </form>
-      <button class="button" @click="cancelPublishRequest">Annuler</button>
+      <NewArticle
+        :publish="publish"
+        :cancelPublishRequest="cancelPublishRequest"
+        @updateTitle="setTitle"
+        @updateContent="setContent"
+      />
     </div>
 
     <div v-if="userPublications && connected">
-      <div v-for="item in userArticles" :key="item.id" class="articles">
-        <h1>{{ item.title }}</h1>
-        <p class="article-txt">{{ item.content }}</p>
-        <button @click="deleteArticle(item)">Supprimer</button>
-      </div>
+      <UserArticles
+        :userArticles="userArticles"
+        :deleteArticle="deleteArticle"
+      />
     </div>
 
     <div v-if="findLastArticles && connected">
-      <div v-for="item in lastArticles" :key="item.id" class="articles">
-        <h1>{{ item.title }}</h1>
-        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
-        <p class="article-txt">{{ item.content }}</p>
-        <button class="button" @click="showComments(item)">Voir les commentaires</button>
-        <div v-if="item.getComments">
-          <div v-for="item in comments" :key="item.id">
-            <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
-            <p class="comment-txt">{{ item.content }}</p>
-          </div>
-          <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
-        </div>
-        <div v-if="item.noComment">
-          <p>Aucun commentaire</p>
-          <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
-        </div>
-        <div v-if="item.newComment">
-          <form>
-            <div class="form-div">          
-              <label for="comment">Votre commentaire :</label><br>
-              <textarea id="comment" v-model="comment.content" rows="10" cols="50" maxlength="10000"></textarea>
-            </div>
-            <div class="form-div">
-              <input type="submit" value="Poster" class="submit" @click.prevent="addComment(item)">
-            </div>
-          </form>
-        </div>
-      </div>
+      <LastArticles
+        :lastArticles="lastArticles"
+        :comments="comments"
+        :showComments="showComments"
+        :newComment="newComment"
+        :addComment="addComment"
+        @updateComment="setComment"
+      />
     </div>
   </div>
 </template>
 
 <script>
   import { mapState, mapActions } from 'vuex';
+  import NewArticle from '@/components/forum/NewArticle.vue';
+  import UserArticles from '@/components/forum/UserArticles.vue';
+  import LastArticles from '@/components/forum/LastArticles.vue';
 
   export default {
     name: 'Forum',
+    components: {
+      NewArticle,
+      UserArticles,
+      LastArticles
+    },
     computed: {
       ...mapState(['article', 'comment', 'userArticles', 'lastArticles', 'comments', 'publication', 'userPublications', 'findLastArticles', 'getComments', 'connected'])
     },
@@ -75,6 +54,15 @@
       ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle', 'readLastArticles', 'showComments', 'addComment', 'connectUser', 'showUser']),
       newComment(article) {
         article.newComment = true;
+      },
+      setTitle(title) {
+        this.article.title = title;
+      },
+      setContent(content) {
+        this.article.content = content;
+      },
+      setComment(content) {
+        this.comment.content = content;
       }
     },
     beforeMount() {

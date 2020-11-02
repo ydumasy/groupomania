@@ -21,6 +21,7 @@ button, input, textarea {
 
 button {
   padding: 5px;
+  cursor: pointer;
 }
 
 #app {
@@ -65,6 +66,5 @@ button {
 .button {
   font-size: 0.85rem;
   margin: 20px;
-  cursor: pointer;
 }
 </style>
