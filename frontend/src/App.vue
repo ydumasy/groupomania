@@ -10,23 +10,37 @@
 </template>
 
 <style lang="scss">
+* {
+  background: #122442;
+}
+
+button, input, textarea {
+  background: #d14454;
+  color: #fff;
+}
+
+button {
+  padding: 5px;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: Montserrat, sans-serif;
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #000;
+  color: #FFF;
 }
 
 #nav {
   padding: 30px;
 
   a {
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #d14454;
 
     &.router-link-exact-active {
-      color: #42b983;
+      color: #fff;
     }
   }
 }
@@ -35,11 +49,16 @@
   margin: 20px;
   label {
     display: inline-block;
-    width: 130px;
+    width: 170px;
+    &.keepConnexion {
+      text-align: left;
+      margin-left: 10px;
+    }
   }
   .submit {
     font-size: 1rem;
     cursor: pointer;
+    padding: 5px;
   }
 }
 

@@ -3,23 +3,20 @@
     <form class="form">
       <div class="form-div">
         <label for="pseudo">Pseudo :</label>
-        <input type="text"  @keyup="updatePseudo" v-model="pseudo" id="pseudo" required>
+        <input type="text" v-model="pseudo" maxlength="20" id="pseudo" @keyup="updatePseudo">
       </div>
       <div class="form-div">
         <label for="password">Mot de passe :</label>
-        <input type="text" @keyup="updatePassword" v-model="password" id="password" required>
+        <input type="text" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
       </div>
       <div class="form-div">
         <input type="checkbox" @change="keepUserConnected" id="keepConnexion">
-        <label for="keepConnexion">Rester connecté</label>
+        <label for="keepConnexion" class="keepConnexion">Rester connecté</label>
       </div>
       <div class="form-div">
-        <input type="submit" @click="login" value="Connexion" class="submit">
+        <input type="submit" value="Connexion" class="submit" @click="login">
       </div>
     </form>
-    <div v-if="msgError">
-      <p class="error">Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.</p>
-    </div>
     <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
     <button @click="unregisterUser">Je m'inscris</button>
   </div>

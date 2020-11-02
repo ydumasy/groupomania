@@ -15,7 +15,6 @@ export default new Vuex.Store({
     },
     connected: false,
     registered: true,
-    msgError: false,
     keepConnexion: false,
     deleteQuery: false,
 
@@ -45,12 +44,6 @@ export default new Vuex.Store({
     },
     DISCONNECTED(state) {
       state.connected = false;
-    },
-    GET_ERROR(state) {
-      state.msgError = true;
-    },
-    HIDE_ERROR(state) {
-      state.msgError = false;
     },
     SHOW_USER(state) {
       if (localStorage.getItem('pseudo') !== null) {
@@ -90,11 +83,9 @@ export default new Vuex.Store({
   },
   actions: {
     registerUser({ commit }) {
-      commit('HIDE_ERROR');
       commit('REGISTERED');
     },
     unregisterUser({ commit }) {
-      commit('HIDE_ERROR');
       commit('UNREGISTERED');
     },
     connectUser({ commit }) {
@@ -134,7 +125,7 @@ export default new Vuex.Store({
           commit('CONNECTED');
         })
         .catch(error => {
-          commit('GET_ERROR');
+          alert("Désolé, une erreur est survenue. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
           console.log(error)
         });
     },
@@ -152,7 +143,7 @@ export default new Vuex.Store({
           commit('CONNECTED');
         })
         .catch(error => {
-          commit('GET_ERROR');
+          alert("Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.");
           console.log(error)
         });
     },
@@ -187,6 +178,8 @@ export default new Vuex.Store({
         commit('HIDE_USER_PUBLICATIONS');
         commit('HIDE_LAST_ARTICLES');
         commit('GET_PUBLISH_REQUEST');
+      } else {
+        alert("Vous devez être connecté pour pouvoir publier un article");
       }
     },
     publish({ state, commit }, e) {
@@ -203,13 +196,17 @@ export default new Vuex.Store({
           state.article.title = '';
           state.article.content= '';
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          alert("Une erreur est survenue. Vérifiez que tous les champs sont bien remplis.");
+          console.log(error);
+        });
     },
     cancelPublishRequest({ commit }) {
       commit('CANCEL_PUBLISH_REQUEST');
     },
     showUserArticles({ state, commit }) {
-      axios.get('/articles/' + state.user.pseudo)
+      if (state.connected) {
+        axios.get('/articles/' + state.user.pseudo)
         .then(sqlDatas => {
           let jsonDatas = JSON.stringify(sqlDatas);
           let globalDatas = JSON.parse(jsonDatas);
@@ -222,6 +219,9 @@ export default new Vuex.Store({
           commit('SHOW_USER_PUBLICATIONS');
         })
         .catch(error => console.log(error));
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }    
     },
     deleteArticle({ state, dispatch }, article) {
       if (confirm("Êtes-vous sûr de vouloir supprimer votre article ?")) {
@@ -246,7 +246,8 @@ export default new Vuex.Store({
       }
     },
     readLastArticles({ state, commit }) {
-      axios.get('/articles')
+      if (state.connected) {
+        axios.get('/articles')
         .then(sqlDatas => {
           let jsonDatas = JSON.stringify(sqlDatas);
           let globalDatas = JSON.parse(jsonDatas);
@@ -259,6 +260,9 @@ export default new Vuex.Store({
           commit('SHOW_LAST_ARTICLES');
         })
         .catch(error => console.log(error));
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }
     },
     showComments({ state }, article) {
       axios.get('/comments/' + article.id)

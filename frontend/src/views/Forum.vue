@@ -25,7 +25,7 @@
     <div v-if="userPublications && connected">
       <div v-for="item in userArticles" :key="item.id" class="articles">
         <h1>{{ item.title }}</h1>
-        <p>{{ item.content }}</p>
+        <p class="article-txt">{{ item.content }}</p>
         <button @click="deleteArticle(item)">Supprimer</button>
       </div>
     </div>
@@ -34,12 +34,12 @@
       <div v-for="item in lastArticles" :key="item.id" class="articles">
         <h1>{{ item.title }}</h1>
         <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
-        <p>{{ item.content }}</p>
+        <p class="article-txt">{{ item.content }}</p>
         <button class="button" @click="showComments(item)">Voir les commentaires</button>
         <div v-if="item.getComments">
           <div v-for="item in comments" :key="item.id">
             <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
-            <p>{{ item.content }}</p>
+            <p class="comment-txt">{{ item.content }}</p>
           </div>
           <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
         </div>
@@ -96,5 +96,9 @@
 
 .articles {
   margin: 40px;
+}
+
+.article-txt, .comment-txt {
+  font-weight: 400;
 }
 </style>

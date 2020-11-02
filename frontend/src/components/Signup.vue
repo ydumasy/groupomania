@@ -3,35 +3,32 @@
     <form class="form">
       <div class="form-div">
         <label for="nom">Nom :</label>
-        <input type="text" @keyup="updateLastName" v-model="lastName" id="nom" required>
+        <input type="text" v-model="lastName" maxlength="30" id="nom" @keyup="updateLastName">
       </div>
       <div class="form-div">
         <label for="prenom">Prénom :</label>
-        <input type="text" @keyup="updateFirstName" v-model="firstName" id="prenom" required>
+        <input type="text" v-model="firstName" maxlength="30" id="prenom" @keyup="updateFirstName">
       </div>
       <div class="form-div">
         <label for="email">E-mail :</label>
-        <input type="text" @keyup="updateEmail" v-model="email" id="email" required>
+        <input type="text" v-model="email" maxlength="50" id="email" @keyup="updateEmail">
       </div>
       <div class="form-div">
         <label for="pseudo">Choisissez un pseudo :</label>
-        <input type="text" @keyup="updatePseudo" v-model="pseudo" id="pseudo" required>
+        <input type="text" v-model="pseudo" maxlength="20" id="pseudo" @keyup="updatePseudo">
       </div>
       <div class="form-div">
         <label for="password">Choisissez un mot de passe :</label>
-        <input type="text" @keyup="updatePassword" v-model="password" id="password" required>
+        <input type="text" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
       </div>
       <div class="form-div">
-        <input type="checkbox" @change="keepUserConnected" id="keepConnexion">
-        <label for="keepConnexion">Rester connecté</label>
+        <input type="checkbox" id="keepConnexion" @change="keepUserConnected">
+        <label for="keepConnexion" class="keepConnexion">Rester connecté</label>
       </div>
       <div class="form-div">
-        <input type="submit" @click="signup" value="Inscription" class="submit">
+        <input type="submit" value="Inscription" class="submit" @click="signup">
       </div>
-      <div v-if="msgError">
-      <p class="error">Désolé, une erreur est survenue. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.</p>
-      </div>
-      <button @click="registerUser" class="button">Déjà inscrit ?</button>
+      <button class="button" @click="registerUser">Déjà inscrit ?</button>
     </form>
   </div>
 </template>

@@ -16,7 +16,6 @@
         :login="login"
         :unregisterUser="unregisterUser"
         :keepUserConnected="keepUserConnected"
-        :msgError="msgError"
         @updatePseudo="setPseudo"
         @updatePassword="setPassword"
       />
@@ -26,7 +25,6 @@
         :signup="signup"
         :registerUser="registerUser"
         :keepUserConnected="keepUserConnected"
-        :msgError="msgError"
         @updateLastName="setLastName"
         @updateFirstName="setFirstName"
         @updateEmail="setEmail"
@@ -51,7 +49,7 @@
       Signup
     },
     computed: {
-      ...mapState(['user', 'registered', 'connected', 'msgError', 'deleteQuery'])
+      ...mapState(['user', 'registered', 'connected', 'deleteQuery'])
     },
     methods: {
       ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'keepUserConnected', 'getDeleteRequest','cancelDeleteRequest', 'deleteUser', 'signup', 'login']),
