@@ -17,6 +17,8 @@
     <div v-if="userPublications && connected">
       <UserArticles
         :userArticles="userArticles"
+        :fullArticle="fullArticle"
+        :readMore="readMore"
         :deleteArticle="deleteArticle"
       />
     </div>
@@ -25,6 +27,8 @@
       <LastArticles
         :lastArticles="lastArticles"
         :comments="comments"
+        :fullArticle="fullArticle"
+        :readMore="readMore"
         :showComments="showComments"
         :newComment="newComment"
         :addComment="addComment"
@@ -48,10 +52,10 @@
       LastArticles
     },
     computed: {
-      ...mapState(['article', 'comment', 'userArticles', 'lastArticles', 'comments', 'publication', 'userPublications', 'findLastArticles', 'getComments', 'connected'])
+      ...mapState(['article', 'comment', 'userArticles', 'lastArticles', 'comments', 'publication', 'userPublications', 'findLastArticles', 'fullArticle', 'readMore', 'connected'])
     },
     methods: {
-      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle', 'readLastArticles', 'showComments', 'addComment', 'connectUser', 'showUser']),
+      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle',  'readLastArticles', 'showComments', 'addComment', 'connectUser', 'showUser']),
       newComment(article) {
         article.newComment = true;
       },
@@ -88,5 +92,14 @@
 
 .article-txt, .comment-txt {
   font-weight: 400;
+  .readMore {
+    color: #fff;
+    font-weight: 500;
+    text-decoration: underline;
+    &:hover {
+      font-weight: 700;
+      cursor: pointer;
+    }
+  }
 }
 </style>

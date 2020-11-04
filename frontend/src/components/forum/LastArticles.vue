@@ -1,10 +1,18 @@
 <template>
   <div>
     <div v-for="item in lastArticles" :key="item.id" class="articles">
-      <h1>{{ item.title }}</h1>
-      <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
-      <p class="article-txt">{{ item.content }}</p>
-      <button class="button" @click="showComments(item)">Voir les commentaires</button>
+      <div v-if="item.fullArticle">
+        <h1>{{ item.title }}</h1>
+        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
+        <p class="article-txt">{{ item.fullContent }}</p>
+        <button class="button" @click="showComments(item)">Voir les commentaires</button>
+      </div>
+      <div v-else>
+        <h1>{{ item.title }}</h1>
+        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
+        <p class="article-txt">{{ item.content }} <span v-if="readMore" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
+        <button class="button" @click="showComments(item)">Voir les commentaires</button>
+      </div>
       <div v-if="item.getComments">
         <div v-for="item in comments" :key="item.id">
           <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
@@ -43,6 +51,14 @@
         type: Array,
         required: true
       },
+      fullArticle: {
+        type: Boolean,
+        default: true
+      },
+      readMore: {
+        type: Boolean,
+        default: false
+      },
       showComments: {
         type: Function,
         required: true
@@ -62,6 +78,9 @@
       }
     },
     methods: {
+      showFullArticle(article) {
+        article.fullArticle = true;
+      },
       updateComment() {
         this.$emit('updateComment', this.comment);
       }

@@ -31,6 +31,8 @@ export default new Vuex.Store({
     publication: false,
     userPublications: false,
     findLastArticles: false,
+    fullArticle: false,
+    readMore: false
   },
   mutations: {
     REGISTERED(state) {
@@ -79,6 +81,9 @@ export default new Vuex.Store({
     },
     HIDE_LAST_ARTICLES(state) {
       state.findLastArticles = false;
+    },
+    READ_MORE(state) {
+      state.readMore = true;
     }
   },
   actions: {
@@ -213,7 +218,17 @@ export default new Vuex.Store({
           let articles = globalDatas.data.articles;
           if (articles.length === 0) return alert("Aucun article trouvé");
           state.userArticles.splice(0, state.userArticles.length);
-          for (let article of articles) state.userArticles.push({ id: article.id, title: article.title, content: article.content });
+          for (let article of articles) {
+            let content = article.content;
+            let fullArticle = true;
+            if (content.length > 2000) {
+              fullArticle = false;
+              content = content.substring(0, 2000);
+              content += "...";
+              commit('READ_MORE');
+            }
+            state.userArticles.push({ id: article.id, title: article.title, content: content, fullContent: article.content, fullArticle: fullArticle });
+          }
           commit('CANCEL_PUBLISH_REQUEST');
           commit('HIDE_LAST_ARTICLES');
           commit('SHOW_USER_PUBLICATIONS');
@@ -254,7 +269,17 @@ export default new Vuex.Store({
           let articles = globalDatas.data.articles;
           if (articles.length === 0) return alert("Aucun article disponible");
           state.lastArticles.splice(0, state.lastArticles.length);
-          for (let article of articles) state.lastArticles.push({ id: article.id, title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: article.content, getComments: false, noComment: false, newComment: false });
+          for (let article of articles) {
+            let content = article.content;
+            let fullArticle = true;
+            if (content.length > 2000) {
+              fullArticle = false;
+              content = content.substring(0, 2000);
+              content += "...";
+              commit('READ_MORE');
+            }
+            state.lastArticles.push({ id: article.id, title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: content, fullContent: article.content, fullArticle: fullArticle, getComments: false, noComment: false, newComment: false });
+          }
           commit('CANCEL_PUBLISH_REQUEST');
           commit('HIDE_USER_PUBLICATIONS');
           commit('SHOW_LAST_ARTICLES');
