@@ -13,6 +13,12 @@ const Article = sequelize.define('Article', {
     author: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    sharedArticle_id: {
+        type: DataTypes.INTEGER
+    },
+    sharedArticle_title: {
+        type: DataTypes.STRING
     }
 });
 

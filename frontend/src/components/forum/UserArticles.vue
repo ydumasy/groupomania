@@ -1,16 +1,12 @@
 <template>
   <div>
-    <div v-for="item in userArticles" :key="item.id" class="articles">
-      <div v-if="item.fullArticle">
-        <h1>{{ item.title }}</h1>
-        <p class="article-txt">{{ item.fullContent }}</p>
-        <button @click="deleteArticle(item)">Supprimer</button>
+    <div v-for="item in userArticles" :key="item.id" class="articles">    
+      <h1>{{ item.title }}</h1>
+      <div v-if="item.sharedArticleTitle !== null" class="sharedArticle">
+        <h1 class="sharedArticle_title" @click="getArticle(item.sharedArticleId)"><img src="../../assets/share-icon.png" alt="Logo de partage d'articles" class="sharedArticle_title--img">{{ item.sharedArticleTitle }}</h1>
       </div>
-      <div v-else>
-        <h1>{{ item.title }}</h1>
-        <p class="article-txt">{{ item.content }} <span v-if="readMore" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
-        <button @click="deleteArticle(item)">Supprimer</button>
-      </div>
+      <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
+      <button @click="deleteArticle(item)">Supprimer</button>
     </div>
   </div>
 </template>
@@ -23,22 +19,17 @@
         type: Array,
         required: true
       },
-      fullArticle: {
-        type: Boolean,
-        default: true
+      getArticle: {
+        type: Function,
+        required: true
       },
-      readMore: {
-        type: Boolean,
-        default: false
+      showFullArticle: {
+        type: Function,
+        required: true
       },
       deleteArticle: {
         type: Function,
         required: true
-      }
-    },
-    methods: {
-      showFullArticle(article) {
-        article.fullArticle = true;
       }
     }
   }

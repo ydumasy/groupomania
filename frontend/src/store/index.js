@@ -7,32 +7,36 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     user: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      pseudo: '',
-      password: ''
+      firstName: null,
+      lastName: null,
+      email: null,
+      pseudo: null,
+      password: null
     },
     connected: false,
     registered: true,
     keepConnexion: false,
     deleteQuery: false,
 
+    main: true,
     article: {
-      title: '',
-      content: ''
+      title: null,
+      content: null
     },
     comment: {
-      content: ''
+      content: null
+    },
+    sharedArticle: {
+      id: null,
+      title: null
     },
     userArticles: [],
     lastArticles: [],
     comments: [],
     publication: false,
+    addSharedArticle: false,
     userPublications: false,
-    findLastArticles: false,
-    fullArticle: false,
-    readMore: false
+    findLastArticles: false
   },
   mutations: {
     REGISTERED(state) {
@@ -64,11 +68,23 @@ export default new Vuex.Store({
       state.deleteQuery = false;
     },
 
+    SHOW_MAIN_CONTENT(state) {
+      state.main = true;
+    },
+    HIDE_MAIN_CONTENT(state) {
+      state.main = false;
+    },
     GET_PUBLISH_REQUEST(state) {
       state.publication = true;
     },
     CANCEL_PUBLISH_REQUEST(state) {
       state.publication = false;
+    },
+    SHARE_ARTICLE(state) {
+      state.addSharedArticle = true;
+    },
+    UNSHARE_ARTICLE(state) {
+      state.addSharedArticle = false;
     },
     SHOW_USER_PUBLICATIONS(state) {
       state.userPublications = true;
@@ -81,9 +97,6 @@ export default new Vuex.Store({
     },
     HIDE_LAST_ARTICLES(state) {
       state.findLastArticles = false;
-    },
-    READ_MORE(state) {
-      state.readMore = true;
     }
   },
   actions: {
@@ -174,12 +187,15 @@ export default new Vuex.Store({
     },
 
     newPage({ commit }) {
+      commit('SHOW_MAIN_CONTENT');
       commit('CANCEL_PUBLISH_REQUEST');
       commit('HIDE_USER_PUBLICATIONS');
       commit('HIDE_LAST_ARTICLES');
     },
     newArticle({ state, commit }) {
       if (state.connected) {
+        state.article.title = '';
+        state.article.content = '';
         commit('HIDE_USER_PUBLICATIONS');
         commit('HIDE_LAST_ARTICLES');
         commit('GET_PUBLISH_REQUEST');
@@ -192,12 +208,15 @@ export default new Vuex.Store({
       axios.post('/articles', {
         title: state.article.title,
         content: state.article.content,
-        author: state.user.pseudo
+        author: state.user.pseudo,
+        sharedArticleId: state.sharedArticle.id,
+        sharedArticleTitle: state.sharedArticle.title
       })
         .then(response => {
           console.log(response);
           alert("Votre article a été publié avec succès");
           commit('CANCEL_PUBLISH_REQUEST');
+          commit('UNSHARE_ARTICLE');
           state.article.title = '';
           state.article.content= '';
         })
@@ -209,34 +228,23 @@ export default new Vuex.Store({
     cancelPublishRequest({ commit }) {
       commit('CANCEL_PUBLISH_REQUEST');
     },
-    showUserArticles({ state, commit }) {
-      if (state.connected) {
-        axios.get('/articles/' + state.user.pseudo)
-        .then(sqlDatas => {
-          let jsonDatas = JSON.stringify(sqlDatas);
-          let globalDatas = JSON.parse(jsonDatas);
-          let articles = globalDatas.data.articles;
-          if (articles.length === 0) return alert("Aucun article trouvé");
-          state.userArticles.splice(0, state.userArticles.length);
-          for (let article of articles) {
-            let content = article.content;
-            let fullArticle = true;
-            if (content.length > 2000) {
-              fullArticle = false;
-              content = content.substring(0, 2000);
-              content += "...";
-              commit('READ_MORE');
-            }
-            state.userArticles.push({ id: article.id, title: article.title, content: content, fullContent: article.content, fullArticle: fullArticle });
-          }
-          commit('CANCEL_PUBLISH_REQUEST');
-          commit('HIDE_LAST_ARTICLES');
-          commit('SHOW_USER_PUBLICATIONS');
+    getArticle({ state, commit }, id) {
+      axios.get(('/articles/' + id))
+        .then(articleDatas => {
+          let article = articleDatas.data.article;
+          state.article.title = article.title;
+          state.article.content = article.content;
+          commit('HIDE_MAIN_CONTENT');
         })
         .catch(error => console.log(error));
-      } else {
-        alert("Vous devez être connecté pour accéder à cette session");
-      }    
+    },
+    showFullArticle({ state, commit }, article) {
+      state.article.title = article.title;
+      state.article.content = article.fullContent;
+      commit('HIDE_MAIN_CONTENT');
+    },
+    returnToMain({ commit }) {
+      commit('SHOW_MAIN_CONTENT');
     },
     deleteArticle({ state, dispatch }, article) {
       if (confirm("Êtes-vous sûr de vouloir supprimer votre article ?")) {
@@ -260,13 +268,46 @@ export default new Vuex.Store({
           });
       }
     },
+    showUserArticles({ state, commit }) {
+      if (state.connected) {
+        axios.get('/articles/author/' + state.user.pseudo)
+        .then(articlesDatas => {
+          let articles = articlesDatas.data.articles;
+          if (articles.length === 0) return alert("Aucun article trouvé");
+          state.userArticles.splice(0, state.userArticles.length);
+          for (let article of articles) {
+            let content = article.content;
+            let fullArticle = true;
+            if (content.length > 2000) {
+              fullArticle = false;
+              content = content.substring(0, 2000);
+              content += "...";
+            }
+            state.userArticles.push({ 
+              id: article.id,
+              title: article.title,
+              content: content,
+              fullContent: article.content,
+              fullArticle: fullArticle,
+              sharedArticleTitle: article.sharedArticle_title,
+              sharedArticleId: article.sharedArticle_id 
+            });
+          }
+          commit('CANCEL_PUBLISH_REQUEST');
+          commit('UNSHARE_ARTICLE');
+          commit('HIDE_LAST_ARTICLES');
+          commit('SHOW_USER_PUBLICATIONS');
+        })
+        .catch(error => console.log(error));
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }    
+    },
     readLastArticles({ state, commit }) {
       if (state.connected) {
         axios.get('/articles')
-        .then(sqlDatas => {
-          let jsonDatas = JSON.stringify(sqlDatas);
-          let globalDatas = JSON.parse(jsonDatas);
-          let articles = globalDatas.data.articles;
+        .then(articlesDatas => {
+          let articles = articlesDatas.data.articles;
           if (articles.length === 0) return alert("Aucun article disponible");
           state.lastArticles.splice(0, state.lastArticles.length);
           for (let article of articles) {
@@ -276,11 +317,24 @@ export default new Vuex.Store({
               fullArticle = false;
               content = content.substring(0, 2000);
               content += "...";
-              commit('READ_MORE');
             }
-            state.lastArticles.push({ id: article.id, title: article.title, author: article.author, date: article.createdAt.split('T')[0], content: content, fullContent: article.content, fullArticle: fullArticle, getComments: false, noComment: false, newComment: false });
+            state.lastArticles.push({
+              id: article.id,
+              title: article.title,
+              author: article.author,
+              date: article.createdAt.split('T')[0],
+              content: content,
+              fullContent: article.content,
+              fullArticle: fullArticle,
+              sharedArticleTitle: article.sharedArticle_title,
+              sharedArticleId: article.sharedArticle_id,
+              getComments: false,
+              noComment: false,
+              newComment: false
+            });
           }
           commit('CANCEL_PUBLISH_REQUEST');
+          commit('UNSHARE_ARTICLE');
           commit('HIDE_USER_PUBLICATIONS');
           commit('SHOW_LAST_ARTICLES');
         })
@@ -320,6 +374,13 @@ export default new Vuex.Store({
           dispatch('showComments', article);
         })
         .catch(error => console.log(error));
+    },
+    share({ state, commit }, article) {
+      commit('HIDE_LAST_ARTICLES');
+      commit('GET_PUBLISH_REQUEST');
+      commit('SHARE_ARTICLE');
+      state.sharedArticle.title = article.title;
+      state.sharedArticle.id = article.id;
     }
   }
 })

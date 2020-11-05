@@ -1,39 +1,50 @@
 <template>
   <div class="forum">
-    <p>Bienvenue sur le Forum ! Ici, vous pouvez écrire et/ou partager avec vos collègues des articles sur des sujets qui vous intéressent.</p>
-    <button class="forum-btn" @click="newArticle">Publier un article</button>
-    <button class="forum-btn" @click="showUserArticles">Mes articles</button>
-    <button class="forum-btn" @click="readLastArticles">Lire les derniers articles</button>
+    <div v-if="main">
+      <p>Bienvenue sur le Forum ! Ici, vous pouvez écrire et/ou partager avec vos collègues des articles sur des sujets qui vous intéressent.</p>
+      <button class="forum-btn" @click="newArticle">Publier un article</button>
+      <button class="forum-btn" @click="showUserArticles">Mes articles</button>
+      <button class="forum-btn" @click="readLastArticles">Articles récents</button>
 
-    <div v-if="publication && connected">
-      <NewArticle
-        :publish="publish"
-        :cancelPublishRequest="cancelPublishRequest"
-        @updateTitle="setTitle"
-        @updateContent="setContent"
-      />
+      <div v-if="publication && connected">
+        <NewArticle
+          :addSharedArticle="addSharedArticle"
+          :sharedArticle="sharedArticle"
+          :publish="publish"
+          :cancelPublishRequest="cancelPublishRequest"
+          @updateTitle="setTitle"
+          @updateContent="setContent"
+        />
+      </div>
+
+      <div v-if="userPublications && connected">
+        <UserArticles
+          :userArticles="userArticles"
+          :getArticle="getArticle"
+          :showFullArticle="showFullArticle"
+          :deleteArticle="deleteArticle"
+        />
+      </div>
+
+      <div v-if="findLastArticles && connected">
+        <LastArticles
+          :lastArticles="lastArticles"
+          :comments="comments"
+          :getArticle="getArticle"
+          :showFullArticle="showFullArticle"
+          :showComments="showComments"
+          :newComment="newComment"
+          :addComment="addComment"
+          :share="share"
+          @updateComment="setComment"
+        />
+      </div>
     </div>
 
-    <div v-if="userPublications && connected">
-      <UserArticles
-        :userArticles="userArticles"
-        :fullArticle="fullArticle"
-        :readMore="readMore"
-        :deleteArticle="deleteArticle"
-      />
-    </div>
-
-    <div v-if="findLastArticles && connected">
-      <LastArticles
-        :lastArticles="lastArticles"
-        :comments="comments"
-        :fullArticle="fullArticle"
-        :readMore="readMore"
-        :showComments="showComments"
-        :newComment="newComment"
-        :addComment="addComment"
-        @updateComment="setComment"
-      />
+    <div v-else>
+      <h1>{{ article.title }}</h1>
+      <p>{{ article.content }}</p>
+      <button @click="returnToMain">Retour</button>
     </div>
   </div>
 </template>
@@ -52,10 +63,10 @@
       LastArticles
     },
     computed: {
-      ...mapState(['article', 'comment', 'userArticles', 'lastArticles', 'comments', 'publication', 'userPublications', 'findLastArticles', 'fullArticle', 'readMore', 'connected'])
+      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'userArticles', 'lastArticles', 'comments', 'publication', 'addSharedArticle', 'userPublications', 'findLastArticles', 'connected'])
     },
     methods: {
-      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'showUserArticles', 'deleteArticle',  'readLastArticles', 'showComments', 'addComment', 'connectUser', 'showUser']),
+      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'showFullArticle', 'returnToMain', 'deleteArticle', 'showUserArticles', 'readLastArticles', 'showComments', 'addComment', 'share', 'connectUser', 'showUser']),
       newComment(article) {
         article.newComment = true;
       },
@@ -84,6 +95,17 @@
   font-size: 1rem;
   margin: 10px 20px;
   cursor: pointer;
+}
+
+.sharedArticle {
+  &_title {
+    font-size: 1rem;
+    cursor: pointer;
+    &--img {
+      margin-right: 10px;
+      transform: translateY(20%);
+    }
+  }
 }
 
 .articles {

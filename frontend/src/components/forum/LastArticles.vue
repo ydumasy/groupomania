@@ -1,18 +1,14 @@
 <template>
   <div>
     <div v-for="item in lastArticles" :key="item.id" class="articles">
-      <div v-if="item.fullArticle">
-        <h1>{{ item.title }}</h1>
-        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
-        <p class="article-txt">{{ item.fullContent }}</p>
-        <button class="button" @click="showComments(item)">Voir les commentaires</button>
+      <h1>{{ item.title }}</h1>
+      <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
+      <div v-if="item.sharedArticleTitle !== null" class="sharedArticle">
+        <h1 class="sharedArticle_title" @click="getArticle(item.sharedArticleId)"><img src="../../assets/share-icon.png" alt="Logo de partage d'articles" class="sharedArticle_title--img">{{ item.sharedArticleTitle }}</h1>
       </div>
-      <div v-else>
-        <h1>{{ item.title }}</h1>
-        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
-        <p class="article-txt">{{ item.content }} <span v-if="readMore" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
-        <button class="button" @click="showComments(item)">Voir les commentaires</button>
-      </div>
+      <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
+      <button class="button" @click="showComments(item)">Voir les commentaires</button>
+      <button class="button" @click="share(item)">Partager</button>
       <div v-if="item.getComments">
         <div v-for="item in comments" :key="item.id">
           <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
@@ -51,13 +47,13 @@
         type: Array,
         required: true
       },
-      fullArticle: {
-        type: Boolean,
-        default: true
+      getArticle: {
+        type: Function,
+        required: true
       },
-      readMore: {
-        type: Boolean,
-        default: false
+      showFullArticle: {
+        type: Function,
+        required: true
       },
       showComments: {
         type: Function,
@@ -70,6 +66,10 @@
       addComment: {
         type: Function,
         required: true
+      },
+      share: {
+        type: Function,
+        required: true
       }
     },
     data() {
@@ -78,9 +78,6 @@
       }
     },
     methods: {
-      showFullArticle(article) {
-        article.fullArticle = true;
-      },
       updateComment() {
         this.$emit('updateComment', this.comment);
       }

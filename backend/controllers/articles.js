@@ -17,6 +17,12 @@ exports.getLastArticles = (req, res) => {
         .catch(error => res.status(500).json({ error }));
 };
 
+exports.getArticleById = (req, res, next) => {
+    Article.findOne({ where: { id: req.params.id } })
+        .then(article => res.status(200).json({ article }))
+        .catch(error => res.status(500).json({ error }));
+};
+
 exports.getArticlesByAuthor = (req, res) => {
     Article.findAll({ 
         where: { author: req.params.author },
@@ -36,7 +42,9 @@ exports.createArticle = (req, res) => {
     const article = {
         title: req.body.title,
         content: req.body.content,
-        author: req.body.author
+        author: req.body.author,
+        sharedArticle_id: req.body.sharedArticleId ? req.body.sharedArticleId : null,
+        sharedArticle_title: req.body.sharedArticleTitle ? req.body.sharedArticleTitle : null
     };
 
     Article.create(article)
