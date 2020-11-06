@@ -28,13 +28,16 @@
 
       <div v-if="findLastArticles && connected">
         <LastArticles
+          :user="user"
           :lastArticles="lastArticles"
           :comments="comments"
           :getArticle="getArticle"
           :showFullArticle="showFullArticle"
+          :deleteArticle="deleteArticle"
           :showComments="showComments"
           :newComment="newComment"
           :addComment="addComment"
+          :deleteComment="deleteComment"
           :share="share"
           @updateComment="setComment"
         />
@@ -63,10 +66,10 @@
       LastArticles
     },
     computed: {
-      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'userArticles', 'lastArticles', 'comments', 'publication', 'addSharedArticle', 'userPublications', 'findLastArticles', 'connected'])
+      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'userArticles', 'lastArticles', 'comments', 'publication', 'addSharedArticle', 'userPublications', 'findLastArticles', 'user', 'connected'])
     },
     methods: {
-      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'showFullArticle', 'returnToMain', 'deleteArticle', 'showUserArticles', 'readLastArticles', 'showComments', 'addComment', 'share', 'connectUser', 'showUser']),
+      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'showFullArticle', 'returnToMain', 'deleteArticle', 'showUserArticles', 'readLastArticles', 'showComments', 'addComment', 'deleteComment', 'share', 'connectUser', 'showUser']),
       newComment(article) {
         article.newComment = true;
       },
@@ -95,6 +98,13 @@
   font-size: 1rem;
   margin: 10px 20px;
   cursor: pointer;
+}
+
+.btnAdmin {
+  font-size: 0.85rem;
+  margin: 10px 20px;
+  cursor: pointer;
+  background: #ee0700;
 }
 
 .sharedArticle {

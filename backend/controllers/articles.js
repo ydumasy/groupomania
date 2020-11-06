@@ -56,7 +56,7 @@ exports.createArticle = (req, res) => {
 };
 
 exports.deleteArticle = (req, res) => {
-    Article.destroy({ where: { title: req.body.title, content: req.body.content, author: req.body.author } })
+    Article.destroy({ where: { id: req.body.id } })
         .then(() => res.status(200).json({ message: "Article supprimé" }))
         .catch(error => res.status(500).json({ error }));
 };

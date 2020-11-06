@@ -15,7 +15,7 @@ exports.signup = (req, res) => {
     };
 
     User.create(user)
-        .then(() => res.status(201).json({ message: "Nouvel utilisateur créé" }))
+        .then(user => res.status(201).json({ user }))
         .catch(error => {
             console.log(error);
             res.status(400).json({ error })
@@ -31,7 +31,7 @@ exports.login = (req, res) => {
     User.findOne({ where: { pseudo: req.body.pseudo, password: req.body.password } })
         .then(user => {
             if(user) {
-                res.status(200).json({ message: "Authentification réussie" });
+                res.status(200).json({ user });
             } else {
                 return res.status(401).json({ error: "Connexion refusée" });
             }

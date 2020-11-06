@@ -11,7 +11,8 @@ export default new Vuex.Store({
       lastName: null,
       email: null,
       pseudo: null,
-      password: null
+      password: null,
+      admin: false
     },
     connected: false,
     registered: true,
@@ -50,13 +51,6 @@ export default new Vuex.Store({
     },
     DISCONNECTED(state) {
       state.connected = false;
-    },
-    SHOW_USER(state) {
-      if (localStorage.getItem('pseudo') !== null) {
-        state.user.pseudo = localStorage.getItem('pseudo');
-      } else {
-        state.user.pseudo = sessionStorage.getItem('pseudo');
-      }
     },
     KEEP_USER_CONNECTED(state) {
       state.keepConnexion = true;
@@ -125,19 +119,25 @@ export default new Vuex.Store({
     cancelDeleteRequest({ commit }) {
       commit('CANCEL_DELETE_REQUEST');
     },
-    showUser({ commit }) {
-      commit('SHOW_USER');
+    showUser({ state }) {
+      if (localStorage.getItem('pseudo') !== null) {
+        state.user.pseudo = localStorage.getItem('pseudo');
+        state.user.admin = JSON.parse(localStorage.getItem('admin')) === 1 ? true : false;
+      } else {
+        state.user.pseudo = sessionStorage.getItem('pseudo');
+        state.user.admin = JSON.parse(sessionStorage.getItem('admin')) === 1 ? true : false;
+      }
     },
     signup({ state, commit }, e) {
       e.preventDefault();
       axios.post('/users/signup', state.user)
-        .then(response => {
-          console.log(response);
+        .then(userDatas => {
+          let user = userDatas.data.user;
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
           if (state.keepConnexion === true) {
-            localStorage.setItem('pseudo', state.user.pseudo);
+            localStorage.setItem('pseudo', user.pseudo);
           } else {
-            sessionStorage.setItem('pseudo', state.user.pseudo);
+            sessionStorage.setItem('pseudo', user.pseudo);
           }
           commit('REGISTERED');
           commit('CONNECTED');
@@ -150,13 +150,16 @@ export default new Vuex.Store({
     login({ state, commit }, e) {
       e.preventDefault();
       axios.post('/users/login', { pseudo: state.user.pseudo, password: state.user.password })
-        .then(response => {
-          console.log(response);
+        .then(userDatas => {
+          let user = userDatas.data.user;
+          let admin = user.admin === true ? 1 : 0;
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
           if (state.keepConnexion === true) {
-            localStorage.setItem('pseudo', state.user.pseudo);
+            localStorage.setItem('pseudo', user.pseudo);
+            localStorage.setItem('admin', admin);
           } else {
-            sessionStorage.setItem('pseudo', state.user.pseudo);
+            sessionStorage.setItem('pseudo', user.pseudo);
+            sessionStorage.setItem('admin', admin);
           }
           commit('CONNECTED');
         })
@@ -236,7 +239,10 @@ export default new Vuex.Store({
           state.article.content = article.content;
           commit('HIDE_MAIN_CONTENT');
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          alert("Une erreur est survenue. Il est possible que l'article que vous essayez de consulter ait été supprimé.");
+          console.log(error);
+        });
     },
     showFullArticle({ state, commit }, article) {
       state.article.title = article.title;
@@ -247,20 +253,22 @@ export default new Vuex.Store({
       commit('SHOW_MAIN_CONTENT');
     },
     deleteArticle({ state, dispatch }, article) {
-      if (confirm("Êtes-vous sûr de vouloir supprimer votre article ?")) {
+      if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
         axios({
           method: 'DELETE',
           url: '/articles',
           data: {
-            title: article.title,
-            content: article.content,
-            author: state.user.pseudo
+            id: article.id
           }
         })
           .then(response => {
             console.log(response);
-            alert("Votre article a bien été supprimé");
-            dispatch('showUserArticles');
+            alert("Article supprimé");
+            if (!state.user.admin) {
+              dispatch('showUserArticles');
+            } else {
+              dispatch('readLastArticles');
+            }
           })
           .catch(error => {
             alert("Une erreur est survenue");
@@ -273,32 +281,35 @@ export default new Vuex.Store({
         axios.get('/articles/author/' + state.user.pseudo)
         .then(articlesDatas => {
           let articles = articlesDatas.data.articles;
-          if (articles.length === 0) return alert("Aucun article trouvé");
           state.userArticles.splice(0, state.userArticles.length);
-          for (let article of articles) {
-            let content = article.content;
-            let fullArticle = true;
-            if (content.length > 2000) {
-              fullArticle = false;
-              content = content.substring(0, 2000);
-              content += "...";
+          if (articles.length === 0) {
+            alert("Aucun article trouvé");
+          } else {
+            for (let article of articles) {
+              let content = article.content;
+              if (content.length > 2000) {
+                content = content.substring(0, 2000);
+                content += "...";
+              }
+              state.userArticles.push({ 
+                id: article.id,
+                title: article.title,
+                content: content,
+                fullContent: article.content,
+                author: article.author,
+                sharedArticleTitle: article.sharedArticle_title,
+                sharedArticleId: article.sharedArticle_id 
+              });
             }
-            state.userArticles.push({ 
-              id: article.id,
-              title: article.title,
-              content: content,
-              fullContent: article.content,
-              fullArticle: fullArticle,
-              sharedArticleTitle: article.sharedArticle_title,
-              sharedArticleId: article.sharedArticle_id 
-            });
           }
           commit('CANCEL_PUBLISH_REQUEST');
           commit('UNSHARE_ARTICLE');
           commit('HIDE_LAST_ARTICLES');
           commit('SHOW_USER_PUBLICATIONS');
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          console.log(error)
+        });
       } else {
         alert("Vous devez être connecté pour accéder à cette session");
       }    
@@ -312,20 +323,17 @@ export default new Vuex.Store({
           state.lastArticles.splice(0, state.lastArticles.length);
           for (let article of articles) {
             let content = article.content;
-            let fullArticle = true;
             if (content.length > 2000) {
-              fullArticle = false;
               content = content.substring(0, 2000);
               content += "...";
             }
             state.lastArticles.push({
               id: article.id,
               title: article.title,
+              content: content,
               author: article.author,
               date: article.createdAt.split('T')[0],
-              content: content,
               fullContent: article.content,
-              fullArticle: fullArticle,
               sharedArticleTitle: article.sharedArticle_title,
               sharedArticleId: article.sharedArticle_id,
               getComments: false,
@@ -374,6 +382,26 @@ export default new Vuex.Store({
           dispatch('showComments', article);
         })
         .catch(error => console.log(error));
+    },
+    deleteComment({ dispatch }, comment) {
+      if (confirm("Êtes-vous sûr de vouloir supprimer ce commentaire ?")) {
+        axios({
+          method: 'DELETE',
+          url: '/comments',
+          data: {
+            id: comment.id
+          }
+        })
+          .then(response => {
+            console.log(response);
+            alert("Commentaire supprimé");
+            dispatch('readLastArticles');
+          })
+          .catch(error => {
+            alert("Une erreur est survenue");
+            console.log(error);
+          });
+      }
     },
     share({ state, commit }, article) {
       commit('HIDE_LAST_ARTICLES');

@@ -9,10 +9,12 @@
       <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
       <button class="button" @click="showComments(item)">Voir les commentaires</button>
       <button class="button" @click="share(item)">Partager</button>
+      <button v-if="user.admin" class="btnAdmin" @click="deleteArticle(item)">Supprimer l'article</button>
       <div v-if="item.getComments">
         <div v-for="item in comments" :key="item.id">
           <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
           <p class="comment-txt">{{ item.content }}</p>
+          <button v-if="user.admin" class="btnAdmin" @click="deleteComment(item)">Supprimer le commentaire</button>
         </div>
         <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
       </div>
@@ -39,6 +41,10 @@
   export default {
     name: 'LastArticles',
     props: {
+      user: {
+        type: Object,
+        required: true
+      },
       lastArticles: {
         type: Array,
         required: true
@@ -55,6 +61,10 @@
         type: Function,
         required: true
       },
+      deleteArticle: {
+        type: Function,
+        required: true
+      },
       showComments: {
         type: Function,
         required: true
@@ -64,6 +74,10 @@
         required: true
       },
       addComment: {
+        type: Function,
+        required: true
+      },
+      deleteComment: {
         type: Function,
         required: true
       },
