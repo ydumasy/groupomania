@@ -12,7 +12,8 @@ export default new Vuex.Store({
       email: null,
       pseudo: null,
       password: null,
-      admin: false
+      admin: false,
+      token: null
     },
     connected: false,
     registered: true,
@@ -123,21 +124,25 @@ export default new Vuex.Store({
       if (localStorage.getItem('pseudo') !== null) {
         state.user.pseudo = localStorage.getItem('pseudo');
         state.user.admin = JSON.parse(localStorage.getItem('admin')) === 1 ? true : false;
+        state.user.token = localStorage.getItem('token');
       } else {
         state.user.pseudo = sessionStorage.getItem('pseudo');
         state.user.admin = JSON.parse(sessionStorage.getItem('admin')) === 1 ? true : false;
+        state.user.token = sessionStorage.getItem('token');
       }
     },
     signup({ state, commit }, e) {
       e.preventDefault();
       axios.post('/users/signup', state.user)
         .then(userDatas => {
-          let user = userDatas.data.user;
+          let user = userDatas.data;
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
           if (state.keepConnexion === true) {
             localStorage.setItem('pseudo', user.pseudo);
+            localStorage.setItem('token', user.token);
           } else {
             sessionStorage.setItem('pseudo', user.pseudo);
+            sessionStorage.setItem('token', user.token);
           }
           commit('REGISTERED');
           commit('CONNECTED');
@@ -151,17 +156,20 @@ export default new Vuex.Store({
       e.preventDefault();
       axios.post('/users/login', { pseudo: state.user.pseudo, password: state.user.password })
         .then(userDatas => {
-          let user = userDatas.data.user;
+          let user = userDatas.data;
           let admin = user.admin === true ? 1 : 0;
           if (localStorage.getItem('pseudo') !== null) localStorage.clear();
           if (state.keepConnexion === true) {
             localStorage.setItem('pseudo', user.pseudo);
             localStorage.setItem('admin', admin);
+            localStorage.setItem('token', user.token);
           } else {
             sessionStorage.setItem('pseudo', user.pseudo);
             sessionStorage.setItem('admin', admin);
+            sessionStorage.setItem('token', user.token);
           }
           commit('CONNECTED');
+          console.log(userDatas);
         })
         .catch(error => {
           alert("Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.");
@@ -181,6 +189,7 @@ export default new Vuex.Store({
         .then(response => {
           localStorage.clear();
           sessionStorage.clear();
+          alert("Votre compte a bien été supprimé");
           commit('DISCONNECTED');
           state.keepConnexion = false;
           commit('CANCEL');
@@ -208,12 +217,17 @@ export default new Vuex.Store({
     },
     publish({ state, commit }, e) {
       e.preventDefault();
-      axios.post('/articles', {
-        title: state.article.title,
-        content: state.article.content,
-        author: state.user.pseudo,
-        sharedArticleId: state.sharedArticle.id,
-        sharedArticleTitle: state.sharedArticle.title
+      axios({
+          method: 'POST',
+          url: '/articles',
+          data: {
+            title: state.article.title,
+            content: state.article.content,
+            author: state.user.pseudo,
+            sharedArticleId: state.sharedArticle.id,
+            sharedArticleTitle: state.sharedArticle.title
+          },
+          headers: { 'Authorization': 'Bearer ' + state.user.token }
       })
         .then(response => {
           console.log(response);
@@ -232,7 +246,11 @@ export default new Vuex.Store({
       commit('CANCEL_PUBLISH_REQUEST');
     },
     getArticle({ state, commit }, id) {
-      axios.get(('/articles/' + id))
+      axios({
+        method: 'GET',
+        url: '/articles/' + id,
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
         .then(articleDatas => {
           let article = articleDatas.data.article;
           state.article.title = article.title;
@@ -257,9 +275,8 @@ export default new Vuex.Store({
         axios({
           method: 'DELETE',
           url: '/articles',
-          data: {
-            id: article.id
-          }
+          data: { id: article.id },
+          headers: { 'Authorization': 'Bearer ' + state.user.token }
         })
           .then(response => {
             console.log(response);
@@ -278,7 +295,11 @@ export default new Vuex.Store({
     },
     showUserArticles({ state, commit }) {
       if (state.connected) {
-        axios.get('/articles/author/' + state.user.pseudo)
+        axios({
+          method: 'GET',
+          url: '/articles/author/' + state.user.pseudo,
+          headers: { 'Authorization': 'Bearer ' + state.user.token }
+        })
         .then(articlesDatas => {
           let articles = articlesDatas.data.articles;
           state.userArticles.splice(0, state.userArticles.length);
@@ -316,7 +337,11 @@ export default new Vuex.Store({
     },
     readLastArticles({ state, commit }) {
       if (state.connected) {
-        axios.get('/articles')
+        axios({
+          method: 'GET',
+          url: '/articles',
+          headers: { 'Authorization': 'Bearer ' + state.user.token }
+        })
         .then(articlesDatas => {
           let articles = articlesDatas.data.articles;
           if (articles.length === 0) return alert("Aucun article disponible");
@@ -352,7 +377,11 @@ export default new Vuex.Store({
       }
     },
     showComments({ state }, article) {
-      axios.get('/comments/' + article.id)
+      axios({
+        method: 'GET',
+        url: '/comments/' + article.id,
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
         .then(sqlDatas => {
           let jsonDatas = JSON.stringify(sqlDatas);
           let globalDatas = JSON.parse(jsonDatas);
@@ -370,10 +399,15 @@ export default new Vuex.Store({
         .catch(error => console.log(error));
     },
     addComment({ state, dispatch }, article) {
-      axios.post('/comments', {
-        author: state.user.pseudo,
-        content: state.comment.content,
-        article_id: article.id
+      axios({
+        method: 'POST',
+        url: '/comments',
+        data: {
+          author: state.user.pseudo,
+          content: state.comment.content,
+          article_id: article.id
+        },
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
       })
         .then(response => {
           console.log(response);
@@ -383,14 +417,13 @@ export default new Vuex.Store({
         })
         .catch(error => console.log(error));
     },
-    deleteComment({ dispatch }, comment) {
+    deleteComment({ state, dispatch }, comment) {
       if (confirm("Êtes-vous sûr de vouloir supprimer ce commentaire ?")) {
         axios({
           method: 'DELETE',
           url: '/comments',
-          data: {
-            id: comment.id
-          }
+          data: { id: comment.id },
+          headers: { 'Authorization': 'Bearer ' + state.user.token }
         })
           .then(response => {
             console.log(response);

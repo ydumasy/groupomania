@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Création d'un nouvel utilisateur
@@ -15,7 +16,12 @@ exports.signup = (req, res) => {
     };
 
     User.create(user)
-        .then(user => res.status(201).json({ user }))
+        .then(user => {
+            res.status(201).json({
+                pseudo: user.pseudo,
+                token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' })
+            });
+        })
         .catch(error => {
             console.log(error);
             res.status(400).json({ error })
@@ -31,11 +37,14 @@ exports.login = (req, res) => {
     User.findOne({ where: { pseudo: req.body.pseudo, password: req.body.password } })
         .then(user => {
             if(user) {
-                res.status(200).json({ user });
+                res.status(200).json({ 
+                    pseudo: user.pseudo,
+                    admin: user.admin,
+                    token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' }) 
+                });
             } else {
                 return res.status(401).json({ error: "Connexion refusée" });
             }
-
         })
         .catch(error => res.status(500).json({ error }))
 };
