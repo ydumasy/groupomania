@@ -1,6 +1,19 @@
+const emailValidator = require('email-validator');
+const passwordValidator = require('password-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 const User = require('../models/User');
+
+const schema = new passwordValidator;
+
+// Spécification des règles à respecter pour la création du mot de passe
+schema
+.is().min(8)
+.has().uppercase()
+.has().lowercase()
+.has().digits()
+.has().not().spaces()
 
 // Création d'un nouvel utilisateur
 exports.signup = (req, res) => {
@@ -8,28 +21,36 @@ exports.signup = (req, res) => {
         return res.status(400).json({ error: "Tous les champs doivent être remplis" });
     }
 
-    bcrypt.hash(req.body.password, 10)
-        .then(hash => {
-            const user = {
-                firstName: req.body.firstName,
-                lastName: req.body.lastName,
-                email: req.body.email,
-                pseudo: req.body.pseudo,
-                password: hash
-            };
-            User.create(user)
-                .then(user => {
-                    res.status(201).json({
-                        pseudo: user.pseudo,
-                        token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' })
-                    });
-                })
-                .catch(error => {
-                    console.log(error);
-                    res.status(400).json({ error })
-                });
-        })
-        .catch(error => res.status(500).json({ error }));
+    if (emailValidator.validate(req.body.email)) {
+        if(schema.validate(req.body.password)) {
+            bcrypt.hash(req.body.password, 10)
+                .then(hash => {
+                    const user = {
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName,
+                        email: req.body.email,
+                        pseudo: req.body.pseudo,
+                        password: hash
+                    };
+                    User.create(user)
+                        .then(user => {
+                            res.status(201).json({
+                                pseudo: user.pseudo,
+                                token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' })
+                            });
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            res.status(400).json({ error })
+                        });
+                    })
+                .catch(error => res.status(500).json({ error }));
+        } else {
+            res.status(401).json({ error: "Le mot de passe doit contenir au minimum 8 caractères, comprendre au moins un caractère majuscule, un caractère minuscule et un chiffre et ne doit pas contenir d'espace" });
+        }
+    } else {
+        res.status(401).json({ error: "E-mail invalide" })
+    }
 };
 
 // Connexion de l'utilisateur à son compte

@@ -148,7 +148,7 @@ export default new Vuex.Store({
           commit('CONNECTED');
         })
         .catch(error => {
-          alert("Désolé, une erreur est survenue. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
+          alert("Désolé, une erreur est survenue. Vérifiez que tous les champs sont correctement remplis. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
           console.log(error)
         });
     },
