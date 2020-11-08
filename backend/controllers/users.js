@@ -65,7 +65,7 @@ exports.login = (req, res) => {
                 bcrypt.compare(req.body.password, user.password)
                     .then(valid => {
                         if (!valid) {
-                            return res.status(400).json("Mot de passe incorrect");
+                            return res.status(401).json({ error: "Mot de passe incorrect" });
                         } else {
                             res.status(200).json({ 
                                 pseudo: user.pseudo,
@@ -84,16 +84,19 @@ exports.login = (req, res) => {
 
 // Suppression du compte
 exports.deleteAccount = (req, res) => {
-    User.destroy({ where: { pseudo: req.body.pseudo, password: req.body.password } })
+    User.findOne({ where: { pseudo: req.body.pseudo } })
         .then(user => {
-            if (user) {
-                res.status(200).json({ message: "Utilisateur supprimé de la base de données" });
-            } else {
-                res.status(401).json({ error: "Mot de passe erronné" });
-            }
+            bcrypt.compare(req.body.password, user.password)
+                .then(valid => {
+                    if (!valid) {
+                    return res.status(400).json({ error: "Mot de passe incorrect" });
+                } else {
+                    User.destroy({ where: { pseudo: req.body.pseudo } })
+                        .then(() => res.status(200).json({ message: "Utilisateur supprimé de la base de données" }))
+                        .catch(error => res.status(500).json({ error }));
+                }
+            })
+            .catch(error => res.status(500).json({ error }))
         })
-        .catch(error => {
-            console.log(req.body);
-            res.status(400).json({ error })
-        });
+        .catch(error => res.status(500).json({ error }));
 };

@@ -7,8 +7,8 @@
       <form class="form">
         <div class="form-div">
           <label for="confirmPassword"  class="confirmPassword" >Par mesure de sécurité, veuillez saisir votre mot de passe :</label><br>
-          <input type="text" v-model="password" maxlength="20" id="confirmPassword" class="confirmPassword" @keyup="updatePassword"><br>
-          <input type="submit" value="Confirmer la suppression" class="confirmPassword" @click="deleteUser">
+          <input type="password" v-model="password" maxlength="20" id="confirmPassword" class="confirmPassword" @keyup="updatePassword"><br>
+          <input type="submit" value="Confirmer la suppression" class="validate" @click.prevent="deleteUser">
           <button class="button" @click="cancelDeleteRequest">Annuler</button>
         </div>
       </form>

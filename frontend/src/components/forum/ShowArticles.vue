@@ -1,20 +1,24 @@
 <template>
   <div>
-    <div v-for="item in lastArticles" :key="item.id" class="articles">
+    <div v-for="item in articles" :key="item.id" class="articles">
       <h1>{{ item.title }}</h1>
-      <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
+      <div v-if="item.author !== user.pseudo">
+        <p><em>Article rédigé par {{ item.author }} le {{ item.date }}</em></p>
+      </div>
       <div v-if="item.sharedArticleTitle !== null" class="sharedArticle">
         <h1 class="sharedArticle_title" @click="getArticle(item.sharedArticleId)"><img src="../../assets/share-icon.png" alt="Logo de partage d'articles" class="sharedArticle_title--img">{{ item.sharedArticleTitle }}</h1>
       </div>
-      <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="showFullArticle(item)">Lire la suite</span></p>
+      <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="getArticle(item.id)">Lire la suite</span></p>
       <button class="button" @click="showComments(item)">Voir les commentaires</button>
       <button class="button" @click="share(item)">Partager</button>
-      <button v-if="user.admin" class="btnAdmin" @click="deleteArticle(item)">Supprimer l'article</button>
+      <button v-if="item.author === user.pseudo" class="button" @click="deleteArticle(item)">Supprimer</button>
+      <button v-else-if="item.author !== user.pseudo && user.admin" class="btnAdmin" @click="deleteArticle(item)">Supprimer l'article</button>
       <div v-if="item.getComments">
         <div v-for="item in comments" :key="item.id">
           <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
           <p class="comment-txt">{{ item.content }}</p>
-          <button v-if="user.admin" class="btnAdmin" @click="deleteComment(item)">Supprimer le commentaire</button>
+          <button v-if="item.author === user.pseudo" class="button" @click="deleteComment(item)">Supprimer</button>
+          <button v-else-if="user.admin" class="btnAdmin" @click="deleteComment(item)">Supprimer le commentaire</button>
         </div>
         <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
       </div>
@@ -39,13 +43,13 @@
 
 <script>
   export default {
-    name: 'LastArticles',
+    name: 'ShowArticles',
     props: {
       user: {
         type: Object,
         required: true
       },
-      lastArticles: {
+      articles: {
         type: Array,
         required: true
       },
@@ -54,10 +58,6 @@
         required: true
       },
       getArticle: {
-        type: Function,
-        required: true
-      },
-      showFullArticle: {
         type: Function,
         required: true
       },

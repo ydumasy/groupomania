@@ -5,6 +5,7 @@
       <button class="forum-btn" @click="newArticle">Publier un article</button>
       <button class="forum-btn" @click="showUserArticles">Mes articles</button>
       <button class="forum-btn" @click="readLastArticles">Articles récents</button>
+      <button class="forum-btn" @click="findArticle">Rechercher un article</button>
 
       <div v-if="publication && connected">
         <NewArticle
@@ -17,22 +18,12 @@
         />
       </div>
 
-      <div v-if="userPublications && connected">
-        <UserArticles
-          :userArticles="userArticles"
-          :getArticle="getArticle"
-          :showFullArticle="showFullArticle"
-          :deleteArticle="deleteArticle"
-        />
-      </div>
-
-      <div v-if="findLastArticles && connected">
-        <LastArticles
+      <div v-if="showArticles && connected">
+        <ShowArticles
           :user="user"
-          :lastArticles="lastArticles"
+          :articles="articles"
           :comments="comments"
           :getArticle="getArticle"
-          :showFullArticle="showFullArticle"
           :deleteArticle="deleteArticle"
           :showComments="showComments"
           :newComment="newComment"
@@ -41,6 +32,13 @@
           :share="share"
           @updateComment="setComment"
         />
+      </div>
+
+      <div v-if="searchArticle">
+        <SearchArticle
+          :searchOptions="searchOptions"
+          :search="search"
+        /> 
       </div>
     </div>
 
@@ -55,21 +53,21 @@
 <script>
   import { mapState, mapActions } from 'vuex';
   import NewArticle from '@/components/forum/NewArticle.vue';
-  import UserArticles from '@/components/forum/UserArticles.vue';
-  import LastArticles from '@/components/forum/LastArticles.vue';
+  import ShowArticles from '@/components/forum/ShowArticles.vue';
+  import SearchArticle from '@/components/forum/SearchArticle.vue';
 
   export default {
     name: 'Forum',
     components: {
       NewArticle,
-      UserArticles,
-      LastArticles
+      ShowArticles,
+      SearchArticle
     },
     computed: {
-      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'userArticles', 'lastArticles', 'comments', 'publication', 'addSharedArticle', 'userPublications', 'findLastArticles', 'user', 'connected'])
+      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'searchOptions', 'articles', 'comments', 'publication', 'addSharedArticle', 'showArticles', 'searchArticle', 'user', 'connected'])
     },
     methods: {
-      ...mapActions(['newPage', 'newArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'showFullArticle', 'returnToMain', 'deleteArticle', 'showUserArticles', 'readLastArticles', 'showComments', 'addComment', 'deleteComment', 'share', 'connectUser', 'showUser']),
+      ...mapActions(['connectUser', 'showUser', 'newPage', 'newArticle', 'showUserArticles', 'readLastArticles', 'findArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'returnToMain', 'search', 'share', 'deleteArticle', 'showComments', 'addComment', 'deleteComment']),
       newComment(article) {
         article.newComment = true;
       },
@@ -89,6 +87,22 @@
         this.connectUser();
         this.newPage();
       }
+    },
+    beforeRouteLeave(to, from, next) {
+      if (this.publication === true) {
+        this.cancelPublishRequest()
+          .then(result => {
+            if(result) {
+              next();
+            } else {
+              next(false);
+            }
+          })
+          .catch(error => console.log(error));
+      } else {
+        next();
+      }
+      
     }
   };
 </script>

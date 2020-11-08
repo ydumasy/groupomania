@@ -17,9 +17,20 @@ exports.getLastArticles = (req, res) => {
         .catch(error => res.status(500).json({ error }));
 };
 
-exports.getArticleById = (req, res, next) => {
+exports.getArticleById = (req, res) => {
     Article.findOne({ where: { id: req.params.id } })
         .then(article => res.status(200).json({ article }))
+        .catch(error => res.status(500).json({ error }));
+};
+
+exports.getArticlesByDate = (req, res) => {
+    Article.findAll({
+        where: sequelize.where(sequelize.fn('DATE', sequelize.col('createdAt')), req.params.date),
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    })
+        .then(articles => res.status(200).json({ articles }))
         .catch(error => res.status(500).json({ error }));
 };
 
@@ -33,6 +44,22 @@ exports.getArticlesByAuthor = (req, res) => {
         .then(articles => res.status(200).json({ articles }))
         .catch(error => res.status(500).json({ error }));
 };
+
+exports.searchArticles = (req, res) => {
+    Article.findAll({ 
+        where: {
+            [sequelize.Op.and]: [
+                sequelize.where(sequelize.fn('DATE', sequelize.col('createdAt')), req.params.date),
+                { author: req.params.author }
+            ]
+        },
+        order: [
+            ['createdAt', 'DESC']
+        ]
+    })
+        .then(articles => res.status(200).json({ articles }))
+        .catch(error => res.status(500).json({ error }));
+}
 
 exports.createArticle = (req, res) => {
     if (!req.body.title || !req.body.content) {

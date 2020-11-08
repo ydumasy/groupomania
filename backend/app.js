@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 // Utilisation de bodyParser pour extraire l'objet JSON de la réponse
 app.use(bodyParser.json());
 
-// Implémentations des routes);
+// Implémentations des routes
 app.use('/api/users', usersRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/comments', commentsRoutes);

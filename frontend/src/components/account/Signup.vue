@@ -19,14 +19,14 @@
       </div>
       <div class="form-div">
         <label for="password">Choisissez un mot de passe :</label>
-        <input type="text" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
+        <input type="password" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
       </div>
       <div class="form-div">
         <input type="checkbox" id="keepConnexion" @change="keepUserConnected">
         <label for="keepConnexion" class="keepConnexion">Rester connecté</label>
       </div>
       <div class="form-div">
-        <input type="submit" value="Inscription" class="submit" @click="signup">
+        <input type="submit" value="Inscription" class="submit" @click.prevent="signup">
       </div>
       <button class="button" @click="registerUser">Déjà inscrit ?</button>
     </form>

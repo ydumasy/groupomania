@@ -55,6 +55,9 @@ button {
       text-align: left;
       margin-left: 10px;
     }
+    &.search {
+      width: 100px;
+    }
   }
   .submit {
     font-size: 1rem;

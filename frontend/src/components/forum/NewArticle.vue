@@ -13,7 +13,7 @@
         <textarea id="content" v-model="content" rows="20" cols="100" maxlength="20000" @keyup="updateContent"></textarea>
       </div>
       <div class="form-div">
-        <input type="submit" value="Publier" class="submit" @click="publish">
+        <input type="submit" value="Publier" class="submit" @click.prevent="publish">
       </div>
     </form>
     <button class="button" @click="cancelPublishRequest">Annuler</button>

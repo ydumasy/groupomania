@@ -89,6 +89,9 @@
     display: inline;
     margin-top: 10px;
   }
+  .validate {
+    cursor: pointer;
+  }
 }
 
 .error {

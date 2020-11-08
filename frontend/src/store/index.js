@@ -32,13 +32,16 @@ export default new Vuex.Store({
       id: null,
       title: null
     },
-    userArticles: [],
-    lastArticles: [],
+    searchOptions: {
+      date: null,
+      author: null
+    },
+    articles: [],
     comments: [],
     publication: false,
     addSharedArticle: false,
-    userPublications: false,
-    findLastArticles: false
+    showArticles: false,
+    searchArticle: false
   },
   mutations: {
     REGISTERED(state) {
@@ -81,17 +84,17 @@ export default new Vuex.Store({
     UNSHARE_ARTICLE(state) {
       state.addSharedArticle = false;
     },
-    SHOW_USER_PUBLICATIONS(state) {
-      state.userPublications = true;
+    SHOW_ARTICLES(state) {
+      state.showArticles = true;
     },
-    HIDE_USER_PUBLICATIONS(state) {
-      state.userPublications = false;
+    HIDE_ARTICLES(state) {
+      state.showArticles = false;
     },
-    SHOW_LAST_ARTICLES(state) {
-      state.findLastArticles = true;
+    SEARCH_ARTICLE(state) {
+      state.searchArticle = true;
     },
-    HIDE_LAST_ARTICLES(state) {
-      state.findLastArticles = false;
+    UNSEARCH_ARTICLE(state) {
+      state.searchArticle = false;
     }
   },
   actions: {
@@ -131,12 +134,13 @@ export default new Vuex.Store({
         state.user.token = sessionStorage.getItem('token');
       }
     },
-    signup({ state, commit }, e) {
-      e.preventDefault();
+    signup({ state, commit }) {
       axios.post('/users/signup', state.user)
         .then(userDatas => {
           let user = userDatas.data;
-          if (localStorage.getItem('pseudo') !== null) localStorage.clear();
+          if (localStorage.getItem('pseudo') !== null) {
+            localStorage.clear();
+          }
           if (state.keepConnexion === true) {
             localStorage.setItem('pseudo', user.pseudo);
             localStorage.setItem('token', user.token);
@@ -152,13 +156,14 @@ export default new Vuex.Store({
           console.log(error)
         });
     },
-    login({ state, commit }, e) {
-      e.preventDefault();
+    login({ state, commit }) {
       axios.post('/users/login', { pseudo: state.user.pseudo, password: state.user.password })
         .then(userDatas => {
           let user = userDatas.data;
           let admin = user.admin === true ? 1 : 0;
-          if (localStorage.getItem('pseudo') !== null) localStorage.clear();
+          if (localStorage.getItem('pseudo') !== null) {
+            localStorage.clear();
+          }
           if (state.keepConnexion === true) {
             localStorage.setItem('pseudo', user.pseudo);
             localStorage.setItem('admin', admin);
@@ -176,8 +181,7 @@ export default new Vuex.Store({
           console.log(error)
         });
     },
-    deleteUser({ state, commit }, e) {
-      e.preventDefault();
+    deleteUser({ state, commit }) {
       axios({
         method: 'DELETE',
         url: '/users',
@@ -195,28 +199,93 @@ export default new Vuex.Store({
           commit('CANCEL');
           console.log(response);
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          alert("Une erreur est survenue. Veuillez vérifiez que votre mot de passe est correct.")
+          console.log(error);
+        });
     },
 
     newPage({ commit }) {
       commit('SHOW_MAIN_CONTENT');
       commit('CANCEL_PUBLISH_REQUEST');
-      commit('HIDE_USER_PUBLICATIONS');
-      commit('HIDE_LAST_ARTICLES');
+      commit('HIDE_ARTICLES');
+      commit('UNSEARCH_ARTICLE');
     },
     newArticle({ state, commit }) {
       if (state.connected) {
-        state.article.title = '';
-        state.article.content = '';
-        commit('HIDE_USER_PUBLICATIONS');
-        commit('HIDE_LAST_ARTICLES');
+        state.article.title = null;
+        state.article.content = null;
+        commit('HIDE_ARTICLES');
+        commit('UNSEARCH_ARTICLE');
         commit('GET_PUBLISH_REQUEST');
       } else {
         alert("Vous devez être connecté pour pouvoir publier un article");
       }
     },
-    publish({ state, commit }, e) {
-      e.preventDefault();
+    showUserArticles({ state, dispatch }) {
+      if (state.connected) {
+        if (state.publication === true) {
+         dispatch('cancelPublishRequest')
+          .then(result => {
+            if (result) {
+              dispatch('searchByAuthor', state.user.pseudo);
+            } else {
+              return;
+            }
+          })
+          .catch(error => console.log(error));
+        } else {
+          dispatch('searchByAuthor', state.user.pseudo);
+        }
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }   
+    },
+    readLastArticles({ state, dispatch }) {
+      if (state.connected) {
+        if (state.publication === true) {
+          dispatch('cancelPublishRequest')
+            .then(result => {
+              if (result) {
+                dispatch('getLastArticles');
+              } else {
+                return;
+              }
+            })
+            .catch(error => console.log(error));
+        } else {
+          dispatch('getLastArticles');
+        }
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }
+    },
+    findArticle({ state, commit, dispatch }) {
+      if (state.connected) {
+        if (state.publication === true) {
+          dispatch('cancelPublishRequest')
+            .then(result => {
+              if (result) {
+                state.searchOptions.date = null;
+                state.searchOptions.author = null;
+                commit('HIDE_ARTICLES');        
+                commit('SEARCH_ARTICLE');
+              } else {
+                return;
+              }
+            })
+            .catch(error => console.log(error));
+        } else {
+          state.searchOptions.date = null;
+          state.searchOptions.author = null;
+          commit('HIDE_ARTICLES'); 
+          commit('SEARCH_ARTICLE');
+        }
+      } else {
+        alert("Vous devez être connecté pour accéder à cette session");
+      }
+    },
+    publish({ state, commit }) {
       axios({
           method: 'POST',
           url: '/articles',
@@ -242,8 +311,18 @@ export default new Vuex.Store({
           console.log(error);
         });
     },
-    cancelPublishRequest({ commit }) {
-      commit('CANCEL_PUBLISH_REQUEST');
+    cancelPublishRequest({ state, commit }) {
+      if (state.article.title !== null || state.article.content !== null) {
+        if (confirm("Attention, vos changements seront perdus. Continuer ?")) {
+          commit('CANCEL_PUBLISH_REQUEST');
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        commit('CANCEL_PUBLISH_REQUEST');
+        return true;
+      }
     },
     getArticle({ state, commit }, id) {
       axios({
@@ -251,24 +330,101 @@ export default new Vuex.Store({
         url: '/articles/' + id,
         headers: { 'Authorization': 'Bearer ' + state.user.token }
       })
-        .then(articleDatas => {
-          let article = articleDatas.data.article;
+        .then(datas => {
+          let article = datas.data.article;
           state.article.title = article.title;
           state.article.content = article.content;
           commit('HIDE_MAIN_CONTENT');
         })
         .catch(error => {
-          alert("Une erreur est survenue. Il est possible que l'article que vous essayez de consulter ait été supprimé.");
           console.log(error);
         });
     },
-    showFullArticle({ state, commit }, article) {
-      state.article.title = article.title;
-      state.article.content = article.fullContent;
-      commit('HIDE_MAIN_CONTENT');
-    },
     returnToMain({ commit }) {
       commit('SHOW_MAIN_CONTENT');
+    },
+    search({ state, dispatch }) {
+      if (state.searchOptions.date !== null && state.searchOptions.author === null) {
+        dispatch('searchByDate', state.searchOptions.date);
+      } else if (state.searchOptions.date === null && state.searchOptions.author !== null) {
+        dispatch('searchByAuthor', state.searchOptions.author);
+      } else if (state.searchOptions.date !== null && state.searchOptions.author !== null) {
+        dispatch('completeResearch', state.searchOptions);
+      } else {
+        alert("Vous devez renseigner au moins un paramètre");
+      }
+    },
+    searchByDate({ state, dispatch }) {
+      axios({
+        method: 'GET',
+        url: '/articles/date/' + state.searchOptions.date,
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+      .then(datas => dispatch('showArticles', datas))
+      .catch(error => console.log(error));
+    },
+    searchByAuthor({ state, dispatch }, author) {
+      axios({
+        method: 'GET',
+        url: '/articles/author/' + author,
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(datas => dispatch('showArticles', datas))
+        .catch(error => console.log(error));
+    },
+    completeResearch({ state, dispatch }, params) {
+      axios({
+        method: 'GET',
+        url: `/articles/${params.date}/${params.author}`,
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(datas => dispatch('showArticles', datas))
+        .catch(error => console.log(error));
+    },
+    getLastArticles({ state, dispatch }) {
+      axios({
+        method: 'GET',
+        url: '/articles',
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(datas => dispatch('showArticles', datas))
+        .catch(error => console.log(error));
+    },
+    showArticles({ state, commit }, datas) {
+      let articles = datas.data.articles;
+      if (articles.length === 0) {
+        return alert("Aucun article disponible");
+      }
+      state.articles.splice(0, state.articles.length);
+          for (let article of articles) {
+            let content = article.content;
+            if (content.length > 2000) {
+              content = content.substring(0, 2000);
+              content += "...";
+            }
+            state.articles.push({
+              id: article.id,
+              title: article.title,
+              content: content,
+              author: article.author,
+              date: article.createdAt.split('T')[0],
+              fullContent: article.content,
+              sharedArticleTitle: article.sharedArticle_title,
+              sharedArticleId: article.sharedArticle_id,
+              getComments: false,
+              noComment: false,
+              newComment: false
+            });
+          }
+          commit('UNSHARE_ARTICLE');
+          commit('UNSEARCH_ARTICLE');
+          commit('SHOW_ARTICLES');
+    },
+    share({ state, commit }, article) {
+      commit('GET_PUBLISH_REQUEST');
+      commit('SHARE_ARTICLE');
+      state.sharedArticle.title = article.title;
+      state.sharedArticle.id = article.id;
     },
     deleteArticle({ state, dispatch }, article) {
       if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
@@ -293,106 +449,23 @@ export default new Vuex.Store({
           });
       }
     },
-    showUserArticles({ state, commit }) {
-      if (state.connected) {
-        axios({
-          method: 'GET',
-          url: '/articles/author/' + state.user.pseudo,
-          headers: { 'Authorization': 'Bearer ' + state.user.token }
-        })
-        .then(articlesDatas => {
-          let articles = articlesDatas.data.articles;
-          state.userArticles.splice(0, state.userArticles.length);
-          if (articles.length === 0) {
-            alert("Aucun article trouvé");
-          } else {
-            for (let article of articles) {
-              let content = article.content;
-              if (content.length > 2000) {
-                content = content.substring(0, 2000);
-                content += "...";
-              }
-              state.userArticles.push({ 
-                id: article.id,
-                title: article.title,
-                content: content,
-                fullContent: article.content,
-                author: article.author,
-                sharedArticleTitle: article.sharedArticle_title,
-                sharedArticleId: article.sharedArticle_id 
-              });
-            }
-          }
-          commit('CANCEL_PUBLISH_REQUEST');
-          commit('UNSHARE_ARTICLE');
-          commit('HIDE_LAST_ARTICLES');
-          commit('SHOW_USER_PUBLICATIONS');
-        })
-        .catch(error => {
-          console.log(error)
-        });
-      } else {
-        alert("Vous devez être connecté pour accéder à cette session");
-      }    
-    },
-    readLastArticles({ state, commit }) {
-      if (state.connected) {
-        axios({
-          method: 'GET',
-          url: '/articles',
-          headers: { 'Authorization': 'Bearer ' + state.user.token }
-        })
-        .then(articlesDatas => {
-          let articles = articlesDatas.data.articles;
-          if (articles.length === 0) return alert("Aucun article disponible");
-          state.lastArticles.splice(0, state.lastArticles.length);
-          for (let article of articles) {
-            let content = article.content;
-            if (content.length > 2000) {
-              content = content.substring(0, 2000);
-              content += "...";
-            }
-            state.lastArticles.push({
-              id: article.id,
-              title: article.title,
-              content: content,
-              author: article.author,
-              date: article.createdAt.split('T')[0],
-              fullContent: article.content,
-              sharedArticleTitle: article.sharedArticle_title,
-              sharedArticleId: article.sharedArticle_id,
-              getComments: false,
-              noComment: false,
-              newComment: false
-            });
-          }
-          commit('CANCEL_PUBLISH_REQUEST');
-          commit('UNSHARE_ARTICLE');
-          commit('HIDE_USER_PUBLICATIONS');
-          commit('SHOW_LAST_ARTICLES');
-        })
-        .catch(error => console.log(error));
-      } else {
-        alert("Vous devez être connecté pour accéder à cette session");
-      }
-    },
     showComments({ state }, article) {
       axios({
         method: 'GET',
         url: '/comments/' + article.id,
         headers: { 'Authorization': 'Bearer ' + state.user.token }
       })
-        .then(sqlDatas => {
-          let jsonDatas = JSON.stringify(sqlDatas);
-          let globalDatas = JSON.parse(jsonDatas);
-          let comments = globalDatas.data.comments;
+        .then(datas => {
+          let comments = datas.data.comments;
           state.comments.splice(0, state.comments.length);
-          for (let article of state.lastArticles) {
+          for (let article of state.articles) {
             article.getComments = false;
             article.noComment = false;
             article.newComment = false;
           }
-          if (comments.length === 0) return article.noComment = true;
+          if (comments.length === 0) {
+            return article.noComment = true;
+          }
           for (let comment of comments) state.comments.push({ id: comment.id, author: comment.author, date: comment.createdAt.split('T')[0], content: comment.content });
           article.getComments = true;
         })
@@ -435,13 +508,6 @@ export default new Vuex.Store({
             console.log(error);
           });
       }
-    },
-    share({ state, commit }, article) {
-      commit('HIDE_LAST_ARTICLES');
-      commit('GET_PUBLISH_REQUEST');
-      commit('SHARE_ARTICLE');
-      state.sharedArticle.title = article.title;
-      state.sharedArticle.id = article.id;
     }
   }
 })
