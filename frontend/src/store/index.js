@@ -466,7 +466,16 @@ export default new Vuex.Store({
           if (comments.length === 0) {
             return article.noComment = true;
           }
-          for (let comment of comments) state.comments.push({ id: comment.id, author: comment.author, date: comment.createdAt.split('T')[0], content: comment.content });
+          for (let comment of comments) {
+            state.comments.push({
+              id: comment.id,
+              author: comment.author,
+              date: comment.createdAt.split('T')[0],
+              time: comment.createdAt.split('T')[1].split('.')[0],
+              content: comment.content
+            });
+            console.log(comment.createdAt);
+          }
           article.getComments = true;
         })
         .catch(error => console.log(error));

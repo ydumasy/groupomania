@@ -13,37 +13,26 @@
       <button class="button" @click="share(item)">Partager</button>
       <button v-if="item.author === user.pseudo" class="button" @click="deleteArticle(item)">Supprimer</button>
       <button v-else-if="item.author !== user.pseudo && user.admin" class="btnAdmin" @click="deleteArticle(item)">Supprimer l'article</button>
-      <div v-if="item.getComments">
-        <div v-for="item in comments" :key="item.id">
-          <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> :</p>
-          <p class="comment-txt">{{ item.content }}</p>
-          <button v-if="item.author === user.pseudo" class="button" @click="deleteComment(item)">Supprimer</button>
-          <button v-else-if="user.admin" class="btnAdmin" @click="deleteComment(item)">Supprimer le commentaire</button>
-        </div>
-        <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
-      </div>
-      <div v-if="item.noComment">
-        <p>Aucun commentaire</p>
-        <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
-      </div>
-      <div v-if="item.newComment">
-        <form>
-          <div class="form-div">          
-            <label for="comment">Votre commentaire :</label><br>
-            <textarea id="comment" v-model="comment" rows="10" cols="50" maxlength="10000" @keyup="updateComment"></textarea>
-          </div>
-          <div class="form-div">
-            <input type="submit" value="Poster" class="submit" @click.prevent="addComment(item)">
-          </div>
-        </form>
-      </div>
+      <ShowComments
+        :user="user"
+        :article="item"
+        :comments="comments"
+        :newComment="newComment"
+        :addComment="addComment"
+        :deleteComment="deleteComment"
+      />
     </div>
   </div>
 </template>
 
 <script>
+  import ShowComments from '@/components/forum/ShowComments.vue';
+
   export default {
     name: 'ShowArticles',
+    components: {
+      ShowComments
+    },
     props: {
       user: {
         type: Object,
