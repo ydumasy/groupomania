@@ -212,6 +212,9 @@ export default new Vuex.Store({
       commit('UNSEARCH_ARTICLE');
     },
     newArticle({ state, commit }) {
+      if (state.publication === true) {
+        return;
+      }
       if (state.connected) {
         state.article.title = null;
         state.article.content = null;
@@ -332,13 +335,12 @@ export default new Vuex.Store({
       })
         .then(datas => {
           let article = datas.data.article;
+          let content = article.content.split('\n');
           state.article.title = article.title;
-          state.article.content = article.content;
+          state.article.content = content;
           commit('HIDE_MAIN_CONTENT');
         })
-        .catch(error => {
-          console.log(error);
-        });
+        .catch(error => console.log(error));
     },
     returnToMain({ commit }) {
       commit('SHOW_MAIN_CONTENT');
@@ -402,13 +404,15 @@ export default new Vuex.Store({
               content = content.substring(0, 2000);
               content += "...";
             }
+            let shortContent = content.split('\n');
+            let longContent = article.content.split('\n');
             state.articles.push({
               id: article.id,
               title: article.title,
-              content: content,
+              content: shortContent,
               author: article.author,
               date: article.createdAt.split('T')[0],
-              fullContent: article.content,
+              fullContent: content === article.content ? shortContent : longContent,
               sharedArticleTitle: article.sharedArticle_title,
               sharedArticleId: article.sharedArticle_id,
               getComments: false,
@@ -467,14 +471,14 @@ export default new Vuex.Store({
             return article.noComment = true;
           }
           for (let comment of comments) {
+            let content = comment.content.split('\n');
             state.comments.push({
               id: comment.id,
               author: comment.author,
               date: comment.createdAt.split('T')[0],
               time: comment.createdAt.split('T')[1].split('.')[0],
-              content: comment.content
+              content: content
             });
-            console.log(comment.createdAt);
           }
           article.getComments = true;
         })

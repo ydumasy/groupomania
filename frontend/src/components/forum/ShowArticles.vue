@@ -8,7 +8,7 @@
       <div v-if="item.sharedArticleTitle !== null" class="sharedArticle">
         <h1 class="sharedArticle_title" @click="getArticle(item.sharedArticleId)"><img src="../../assets/share-icon.png" alt="Logo de partage d'articles" class="sharedArticle_title--img">{{ item.sharedArticleTitle }}</h1>
       </div>
-      <p class="article-txt">{{ item.content }} <span v-if="item.content !== item.fullContent" class="readMore" @click="getArticle(item.id)">Lire la suite</span></p>
+      <p v-for="(paragraph, index) in item.content" :key="index" class="article-txt">{{ paragraph }} <span v-if="item.content !== item.fullContent && index === (item.content.length - 1)" class="readMore" @click="getArticle(item.id)">Lire la suite</span></p>
       <button class="button" @click="showComments(item)">Voir les commentaires</button>
       <button class="button" @click="share(item)">Partager</button>
       <button v-if="item.author === user.pseudo" class="button" @click="deleteArticle(item)">Supprimer</button>
@@ -17,9 +17,9 @@
         :user="user"
         :article="item"
         :comments="comments"
-        :newComment="newComment"
         :addComment="addComment"
         :deleteComment="deleteComment"
+        @updateComment="updateComment"
       />
     </div>
   </div>
@@ -58,10 +58,6 @@
         type: Function,
         required: true
       },
-      newComment: {
-        type: Function,
-        required: true
-      },
       addComment: {
         type: Function,
         required: true
@@ -75,14 +71,9 @@
         required: true
       }
     },
-    data() {
-      return {
-        comment: ''
-      }
-    },
     methods: {
-      updateComment() {
-        this.$emit('updateComment', this.comment);
+      updateComment(comment) {
+        this.$emit('updateComment', comment);
       }
     }
   }

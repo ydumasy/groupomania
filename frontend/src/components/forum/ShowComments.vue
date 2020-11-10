@@ -3,24 +3,24 @@
     <div v-if="article.getComments">
       <div v-for="item in comments" :key="item.id">
         <p><strong>{{ item.author }}</strong>, le <em>{{ item.date }}</em> à <em>{{ item.time }}</em> :</p>
-        <p class="comment-txt">{{ item.content }}</p>
+        <p v-for="(paragraph, index) in item.content" :key="index" class="comment-txt">{{ paragraph }}</p>
         <button v-if="item.author === user.pseudo" class="button" @click="deleteComment(item)">Supprimer</button>
         <button v-else-if="user.admin" class="btnAdmin" @click="deleteComment(item)">Supprimer le commentaire</button>
       </div>
-      <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
+      <button class="button" @click="newComment(article)">Ajouter un commentaire</button>
     </div>
     <div v-if="article.noComment">
       <p>Aucun commentaire</p>
-      <button class="button" @click="newComment(item)">Ajouter un commentaire</button>
+      <button class="button" @click="newComment(article)">Ajouter un commentaire</button>
     </div>
     <div v-if="article.newComment">
       <form>
         <div class="form-div">          
           <label for="comment">Votre commentaire :</label><br>
-          <textarea id="comment" v-model="comment" rows="10" cols="50" maxlength="10000" @keyup="updateComment"></textarea>
+          <textarea id="comment" v-model="comment" rows="10" cols="50" maxlength="2000" @keyup="updateComment"></textarea>
         </div>
         <div class="form-div">
-          <input type="submit" value="Poster" class="submit" @click.prevent="addComment(item)">
+          <input type="submit" value="Poster" class="submit" @click.prevent="addComment(article)">
         </div>
       </form>
     </div>
@@ -43,10 +43,6 @@
         type: Array,
         required: true
       },
-      newComment: {
-        type: Function,
-        required: true
-      },
       addComment: {
         type: Function,
         required: true
@@ -54,6 +50,19 @@
       deleteComment: {
         type: Function,
         required: true
+      }
+    },
+    data() {
+      return {
+        comment: ''
+      }
+    },
+    methods: {
+      newComment(article) {
+        article.newComment = true;
+      },
+      updateComment() {
+        this.$emit('updateComment', this.comment);
       }
     }
   }

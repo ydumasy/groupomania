@@ -26,7 +26,6 @@
           :getArticle="getArticle"
           :deleteArticle="deleteArticle"
           :showComments="showComments"
-          :newComment="newComment"
           :addComment="addComment"
           :deleteComment="deleteComment"
           :share="share"
@@ -44,7 +43,7 @@
 
     <div v-else>
       <h1>{{ article.title }}</h1>
-      <p>{{ article.content }}</p>
+      <p v-for="(paragraph, index) in article.content" :key="index" class="article-txt">{{ paragraph }}</p>
       <button @click="returnToMain">Retour</button>
     </div>
   </div>
@@ -68,9 +67,6 @@
     },
     methods: {
       ...mapActions(['connectUser', 'showUser', 'newPage', 'newArticle', 'showUserArticles', 'readLastArticles', 'findArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'returnToMain', 'search', 'share', 'deleteArticle', 'showComments', 'addComment', 'deleteComment']),
-      newComment(article) {
-        article.newComment = true;
-      },
       setTitle(title) {
         this.article.title = title;
       },
@@ -138,6 +134,7 @@
 
 .article-txt, .comment-txt {
   font-weight: 400;
+  text-align: justify;
   .readMore {
     color: #fff;
     font-weight: 500;
@@ -147,5 +144,9 @@
       cursor: pointer;
     }
   }
+}
+
+.comment-txt {
+  margin: 0px;
 }
 </style>
