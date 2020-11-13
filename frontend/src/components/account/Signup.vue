@@ -20,6 +20,7 @@
       <div class="form-div">
         <label for="password">Choisissez un mot de passe :</label>
         <input type="password" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
+        <p class="info">NB : Le mot de passe doit contenir au minimum 8 caractères, une lettre majuscule, une lettre minuscule, un chiffre et ne doit pas contenir de symbole ni d'espace.</p>
       </div>
       <div class="form-div">
         <input type="checkbox" id="keepConnexion" @change="keepUserConnected">

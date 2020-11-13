@@ -5,6 +5,7 @@ import store from './store'
 
 Vue.config.productionTip = false
 
+// Création de l'instance Vue
 new Vue({
   router,
   store,

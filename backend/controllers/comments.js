@@ -1,12 +1,14 @@
 const sequelize = require('sequelize');
 const Comment = require('../models/Comment');
 
-exports.getCommentsById = (req, res) => {
+// Fonction READ
+exports.getCommentsByArticle = (req, res) => {
     Comment.findAll({ where: { article_id: req.params.article_id } })
         .then(comments => res.status(200).json({ comments }))
         .catch(error => res.status(500).json({ error }));
 };
 
+// Fonction CREATE
 exports.newComment = (req, res) => {
     const comment = {
         author: req.body.author,
@@ -22,6 +24,7 @@ exports.newComment = (req, res) => {
         });
 };
 
+// Fonction DELETE
 exports.deleteComment = (req, res) => {
     Comment.destroy({ where: { id: req.body.id } })
         .then(() => res.status(200).json({ message: "Commentaire supprimé" }))

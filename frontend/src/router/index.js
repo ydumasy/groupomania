@@ -6,6 +6,7 @@ import Forum from '../views/Forum';
 
 Vue.use(VueRouter)
 
+// Création des différentes routes de l'app
 const routes = [
   {
     path: '/',
@@ -24,6 +25,7 @@ const routes = [
   }
 ]
 
+// Création du router Vue
 const router = new VueRouter({
   mode: 'history',
   routes

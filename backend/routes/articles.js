@@ -2,9 +2,11 @@ const express = require('express');
 const articlesCtrl = require('../controllers/articles');
 const auth = require('../middleware/auth');
 
+// Utilisation d'un router
 const router = express.Router();
 
-router.get('/', auth, articlesCtrl.getLastArticles);
+// Création des routes articles
+router.get('/', auth, articlesCtrl.getLatestArticles);
 router.get('/:id', auth, articlesCtrl.getArticleById);
 router.get('/date/:date', auth, articlesCtrl.getArticlesByDate);
 router.get('/author/:author', auth, articlesCtrl.getArticlesByAuthor);

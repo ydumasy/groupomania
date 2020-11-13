@@ -123,7 +123,8 @@
     cursor: pointer;
     &--img {
       margin-right: 10px;
-      transform: translateY(20%);
+      -webkit-transform: translateY(20%);
+              transform: translateY(20%);
     }
   }
 }

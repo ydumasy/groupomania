@@ -14,6 +14,7 @@ schema
 .has().lowercase()
 .has().digits()
 .has().not().spaces()
+.has().not().symbols()
 
 // Création d'un nouvel utilisateur
 exports.signup = (req, res) => {
@@ -39,17 +40,14 @@ exports.signup = (req, res) => {
                                 token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' })
                             });
                         })
-                        .catch(error => {
-                            console.log(error);
-                            res.status(400).json({ error })
-                        });
+                        .catch(error => res.status(400).json({ error }));
                     })
                 .catch(error => res.status(500).json({ error }));
         } else {
-            res.status(401).json({ error: "Le mot de passe doit contenir au minimum 8 caractères, comprendre au moins un caractère majuscule, un caractère minuscule et un chiffre et ne doit pas contenir d'espace" });
+            res.status(401).json({ error: "Le mot de passe doit contenir au minimum 8 caractères, comprendre au moins un caractère majuscule, un caractère minuscule et un chiffre et ne doit pas contenir d'espace ni de caractères spéciaux" });
         }
     } else {
-        res.status(401).json({ error: "E-mail invalide" })
+        res.status(401).json({ error: "E-mail invalide" });
     }
 };
 
@@ -59,27 +57,31 @@ exports.login = (req, res) => {
         return res.status(400).json({ error: "Tous les champs doivent être remplis" });
     }
     
-    User.findOne({ where: { pseudo: req.body.pseudo } })
-        .then(user => {
-            if (user) {
-                bcrypt.compare(req.body.password, user.password)
-                    .then(valid => {
-                        if (!valid) {
-                            return res.status(401).json({ error: "Mot de passe incorrect" });
-                        } else {
-                            res.status(200).json({ 
-                                pseudo: user.pseudo,
-                                admin: user.admin,
-                                token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' }) 
-                            });
-                        }
-                    })
-                    .catch(error => res.status(500).json({ error }));
-            } else {
-                return res.status(401).json({ error: "Connexion refusée" });
-            }
-        })
-        .catch(error => res.status(500).json({ error }))
+    if (schema.validate(req.body.password)) {
+        User.findOne({ where: { pseudo: req.body.pseudo } })
+            .then(user => {
+                if (user) {
+                    bcrypt.compare(req.body.password, user.password)
+                        .then(valid => {
+                            if (!valid) {
+                                res.status(401).json({ error: "Mot de passe incorrect" });
+                            } else {
+                                res.status(200).json({ 
+                                    pseudo: user.pseudo,
+                                    admin: user.admin,
+                                    token: jwt.sign({ userId: user.id }, 'Gq8SZFSVIehzomW9QSjRUZ7Vlc5ykogXJMebbe3M', { expiresIn: '24h' }) 
+                                });
+                            }
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                } else {
+                    res.status(401).json({ error: "Connexion refusée" });
+                }
+            })
+            .catch(error => res.status(500).json({ error }))
+    } else {
+        res.status(401).json({ error: "Mot de passe incorrect" });
+    }
 };
 
 // Suppression du compte
@@ -89,14 +91,14 @@ exports.deleteAccount = (req, res) => {
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if (!valid) {
-                    return res.status(400).json({ error: "Mot de passe incorrect" });
-                } else {
-                    User.destroy({ where: { pseudo: req.body.pseudo } })
-                        .then(() => res.status(200).json({ message: "Utilisateur supprimé de la base de données" }))
-                        .catch(error => res.status(500).json({ error }));
-                }
-            })
-            .catch(error => res.status(500).json({ error }))
+                    res.status(400).json({ error: "Mot de passe incorrect" });
+                    } else {
+                        User.destroy({ where: { pseudo: req.body.pseudo } })
+                            .then(() => res.status(200).json({ message: "Utilisateur supprimé de la base de données" }))
+                            .catch(error => res.status(500).json({ error }));
+                    }
+                })
+                .catch(error => res.status(500).json({ error }))
         })
         .catch(error => res.status(500).json({ error }));
 };

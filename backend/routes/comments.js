@@ -2,9 +2,11 @@ const express = require('express');
 const commentsCtrl = require('../controllers/comments');
 const auth = require('../middleware/auth');
 
+// Utilisation d'un router
 const router = express.Router();
 
-router.get('/:article_id', auth, commentsCtrl.getCommentsById);
+// Création des routes commentaires
+router.get('/:article_id', auth, commentsCtrl.getCommentsByArticle);
 router.post('/', auth, commentsCtrl.newComment);
 router.delete('/', auth, commentsCtrl.deleteComment);
 

@@ -6,6 +6,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    // Variables de la route Account
     user: {
       firstName: null,
       lastName: null,
@@ -19,7 +20,7 @@ export default new Vuex.Store({
     registered: true,
     keepConnexion: false,
     deleteQuery: false,
-
+    // Variables de la route Forum
     main: true,
     article: {
       title: null,
@@ -44,6 +45,7 @@ export default new Vuex.Store({
     searchArticle: false
   },
   mutations: {
+    // Mutations de la route Account
     REGISTERED(state) {
       state.registered = true;
     },
@@ -65,7 +67,7 @@ export default new Vuex.Store({
     CANCEL_DELETE_REQUEST(state) {
       state.deleteQuery = false;
     },
-
+    // Mutations de la route Forum
     SHOW_MAIN_CONTENT(state) {
       state.main = true;
     },
@@ -98,6 +100,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    // Méthodes de la route Account
     registerUser({ commit }) {
       commit('REGISTERED');
     },
@@ -150,9 +153,10 @@ export default new Vuex.Store({
           }
           commit('REGISTERED');
           commit('CONNECTED');
+          state.user.password = null;
         })
         .catch(error => {
-          alert("Désolé, une erreur est survenue. Vérifiez que tous les champs sont correctement remplis. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
+          alert("Une erreur est survenue. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
           console.log(error)
         });
     },
@@ -174,7 +178,7 @@ export default new Vuex.Store({
             sessionStorage.setItem('token', user.token);
           }
           commit('CONNECTED');
-          console.log(userDatas);
+          state.user.password = null;
         })
         .catch(error => {
           alert("Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.");
@@ -196,7 +200,7 @@ export default new Vuex.Store({
           alert("Votre compte a bien été supprimé");
           commit('DISCONNECTED');
           state.keepConnexion = false;
-          commit('CANCEL');
+          commit('CANCEL_DELETE_REQUEST');
           console.log(response);
         })
         .catch(error => {
@@ -204,7 +208,7 @@ export default new Vuex.Store({
           console.log(error);
         });
     },
-
+    // Méthodes de la route Forum
     newPage({ commit }) {
       commit('SHOW_MAIN_CONTENT');
       commit('CANCEL_PUBLISH_REQUEST');

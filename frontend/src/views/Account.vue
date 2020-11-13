@@ -97,4 +97,11 @@
 .error {
   font-size: 0.85rem;
 }
+
+.info {
+  font-size: 0.75rem;
+  font-style: italic;
+  width: 30%;
+  margin: 10px auto;
+}
 </style>

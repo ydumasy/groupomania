@@ -1,7 +1,8 @@
 const sequelize = require('sequelize');
 const Article = require('../models/Article');
 
-exports.getLastArticles = (req, res) => {
+// Fonctions READ
+exports.getLatestArticles = (req, res) => {
     Article.findAll({ 
         where: sequelize.where(sequelize.fn('DATE', sequelize.col('createdAt')), {
             [sequelize.Op.between]: [
@@ -61,6 +62,7 @@ exports.searchArticles = (req, res) => {
         .catch(error => res.status(500).json({ error }));
 }
 
+// Fonction CREATE
 exports.createArticle = (req, res) => {
     if (!req.body.title || !req.body.content) {
         return res.status(400).json({ error: "Tous les champs doivent être remplis" });
@@ -76,12 +78,10 @@ exports.createArticle = (req, res) => {
 
     Article.create(article)
         .then(() => res.status(201).json({ message: "Nouvel article créé" }))
-        .catch(error => {
-            console.log(error);
-            res.status(400).json({ error })
-        });
+        .catch(error => res.status(400).json({ error }));
 };
 
+// Fonction DELETE
 exports.deleteArticle = (req, res) => {
     Article.destroy({ where: { id: req.body.id } })
         .then(() => res.status(200).json({ message: "Article supprimé" }))
