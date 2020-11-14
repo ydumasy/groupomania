@@ -75,10 +75,22 @@ exports.createArticle = (req, res) => {
         sharedArticle_id: req.body.sharedArticleId ? req.body.sharedArticleId : null,
         sharedArticle_title: req.body.sharedArticleTitle ? req.body.sharedArticleTitle : null
     };
-
     Article.create(article)
         .then(() => res.status(201).json({ message: "Nouvel article créé" }))
         .catch(error => res.status(400).json({ error }));
+};
+
+//Fonction UPDATE
+exports.updateArticle = (req, res) => {
+    if (!req.body.content) {
+        return res.status(400).json({ error: "Aucun contenu" });
+    }
+
+    Article.update({ content: req.body.content }, {
+        where: { id: req.body.id }
+    })
+        .then(() => res.status(200).json({ message: "Article modifié" }))
+        .catch(error => res.status(500).json({ error }));
 };
 
 // Fonction DELETE

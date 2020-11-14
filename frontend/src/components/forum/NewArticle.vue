@@ -2,18 +2,28 @@
   <div>
     <form>
       <div class="form-div">
-        <label for="title">Titre :</label><br>
-        <input type="text" v-model="title" id="title" @keyup="updateTitle">
+        <div v-if="edit">
+          <h1>{{ article.title }}</h1>
+        </div>
+        <div v-else>
+          <label for="title">Titre :</label><br>
+          <input type="text" v-model="article.title" id="title">
+        </div>
       </div>
       <div v-if="addSharedArticle" class="sharedArticle">
         <h1 class="sharedArticle_title"><img src="../../assets/share-icon.png" alt="Logo de partage d'articles" class="sharedArticle_title--img">{{ sharedArticle.title }}</h1>
       </div>
       <div class="form-div">
         <label for="content">Contenu :</label><br>
-        <textarea id="content" v-model="content" rows="20" cols="100" maxlength="20000" @keyup="updateContent"></textarea>
+        <textarea id="content" v-model="article.content" rows="20" cols="100" maxlength="20000"></textarea>
       </div>
       <div class="form-div">
-        <input type="submit" value="Publier" class="submit" @click.prevent="publish">
+        <div v-if="edit">
+          <input type="submit" value="Éditer" class="submit" @click.prevent="update">
+        </div>
+        <div v-else>
+          <input type="submit" value="Publier" class="submit" @click.prevent="publish">
+        </div>
       </div>
     </form>
     <button class="button" @click="cancelPublishRequest">Annuler</button>
@@ -24,6 +34,14 @@
   export default {
     name: 'NewArticle',
     props: {
+      edit: {
+        type: Boolean,
+        required: true
+      },
+      article: {
+        type: Object,
+        required: true
+      },
       addSharedArticle: {
         type: Boolean,
         default: false
@@ -36,23 +54,13 @@
         type: Function,
         required: true
       },
+      update: {
+        type: Function,
+        required: true
+      },
       cancelPublishRequest: {
         type: Function,
         required: true
-      }
-    },
-    data() {
-      return {
-        title: '',
-        content: ''
-      }
-    },
-    methods: {
-      updateTitle() {
-        this.$emit('updateTitle', this.title);
-      },
-      updateContent() {
-        this.$emit('updateContent', this.content);
       }
     }
   }

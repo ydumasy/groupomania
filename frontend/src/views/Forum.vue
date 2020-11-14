@@ -9,27 +9,31 @@
 
       <div v-if="publication && connected">
         <NewArticle
+          :edit="edit"
+          :article="article"
           :addSharedArticle="addSharedArticle"
           :sharedArticle="sharedArticle"
           :publish="publish"
+          :update="update"
           :cancelPublishRequest="cancelPublishRequest"
-          @updateTitle="setTitle"
-          @updateContent="setContent"
         />
       </div>
 
       <div v-if="showArticles && connected">
         <ShowArticles
           :user="user"
+          :comment="comment"
           :articles="articles"
           :comments="comments"
           :getArticle="getArticle"
+          :editArticle="editArticle"
           :deleteArticle="deleteArticle"
           :showComments="showComments"
+          :editComment="editComment"
           :addComment="addComment"
+          :updateComment="updateComment"
           :deleteComment="deleteComment"
           :share="share"
-          @updateComment="setComment"
         />
       </div>
 
@@ -63,19 +67,10 @@
       SearchArticle
     },
     computed: {
-      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'searchOptions', 'articles', 'comments', 'publication', 'addSharedArticle', 'showArticles', 'searchArticle', 'user', 'connected'])
+      ...mapState(['main', 'article', 'comment', 'sharedArticle', 'searchOptions', 'articles', 'comments', 'publication', 'edit', 'addSharedArticle', 'showArticles', 'searchArticle', 'user', 'connected'])
     },
     methods: {
-      ...mapActions(['connectUser', 'showUser', 'newPage', 'newArticle', 'showUserArticles', 'readLastArticles', 'findArticle', 'publish', 'cancelPublishRequest', 'getArticle', 'returnToMain', 'search', 'share', 'deleteArticle', 'showComments', 'addComment', 'deleteComment']),
-      setTitle(title) {
-        this.article.title = title;
-      },
-      setContent(content) {
-        this.article.content = content;
-      },
-      setComment(content) {
-        this.comment.content = content;
-      }
+      ...mapActions(['connectUser', 'showUser', 'newPage', 'newArticle', 'showUserArticles', 'readLastArticles', 'findArticle', 'publish', 'update', 'cancelPublishRequest', 'getArticle', 'returnToMain', 'search', 'share', 'editArticle', 'deleteArticle', 'showComments', 'editComment', 'addComment', 'updateComment', 'deleteComment']),
     },
     beforeMount() {
       if(localStorage.getItem('pseudo') !== null || sessionStorage.getItem('pseudo') !== null) {

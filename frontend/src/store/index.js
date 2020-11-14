@@ -23,10 +23,12 @@ export default new Vuex.Store({
     // Variables de la route Forum
     main: true,
     article: {
+      id: null,
       title: null,
-      content: null
+      content: null,
     },
     comment: {
+      id: null,
       content: null
     },
     sharedArticle: {
@@ -40,6 +42,7 @@ export default new Vuex.Store({
     articles: [],
     comments: [],
     publication: false,
+    edit: false,
     addSharedArticle: false,
     showArticles: false,
     searchArticle: false
@@ -79,6 +82,12 @@ export default new Vuex.Store({
     },
     CANCEL_PUBLISH_REQUEST(state) {
       state.publication = false;
+    },
+    EDIT_ARTICLE(state) {
+      state.edit = true;
+    },
+    CANCEL_EDIT(state) {
+      state.edit = false;
     },
     SHARE_ARTICLE(state) {
       state.addSharedArticle = true;
@@ -209,19 +218,21 @@ export default new Vuex.Store({
         });
     },
     // Méthodes de la route Forum
-    newPage({ commit }) {
-      commit('SHOW_MAIN_CONTENT');
+    newPage({ state, commit }) {
+      state.article.id = null;
+      state.article.title = null;
+      state.article.content = null;
       commit('CANCEL_PUBLISH_REQUEST');
+      commit('CANCEL_EDIT');
       commit('HIDE_ARTICLES');
       commit('UNSEARCH_ARTICLE');
+      commit('SHOW_MAIN_CONTENT');
     },
     newArticle({ state, commit }) {
       if (state.publication === true) {
         return;
       }
       if (state.connected) {
-        state.article.title = null;
-        state.article.content = null;
         commit('HIDE_ARTICLES');
         commit('UNSEARCH_ARTICLE');
         commit('GET_PUBLISH_REQUEST');
@@ -308,26 +319,57 @@ export default new Vuex.Store({
         .then(response => {
           console.log(response);
           alert("Votre article a été publié avec succès");
+          state.article.id = null;
+          state.article.title = null;
+          state.article.content= null;
           commit('CANCEL_PUBLISH_REQUEST');
+          commit('CANCEL_EDIT');
           commit('UNSHARE_ARTICLE');
-          state.article.title = '';
-          state.article.content= '';
         })
         .catch(error => {
           alert("Une erreur est survenue. Vérifiez que tous les champs sont bien remplis.");
           console.log(error);
         });
     },
+    update({ state, commit }) {
+      axios({
+        method: 'PUT',
+        url: '/articles',
+        data: {
+          id: state.article.id,
+          content: state.article.content
+        },
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(response => {
+          console.log(response);
+          alert("Votre contenu a été mis à jour");
+          state.article.id = null;
+          state.article.title = null;
+          state.article.content= null;
+          commit('CANCEL_PUBLISH_REQUEST');
+          commit('CANCEL_EDIT');
+        })
+        .catch(error => {
+          alert("Une erreur est survenue");
+          console.log(error);
+      });
+    },
     cancelPublishRequest({ state, commit }) {
       if (state.article.title !== null || state.article.content !== null) {
         if (confirm("Attention, vos changements seront perdus. Continuer ?")) {
+          state.article.id = null;
+          state.article.title = null;
+          state.article.content = null;
           commit('CANCEL_PUBLISH_REQUEST');
+          commit('CANCEL_EDIT');
           return true;
         } else {
           return false;
         }
       } else {
         commit('CANCEL_PUBLISH_REQUEST');
+        commit('CANCEL_EDIT');
         return true;
       }
     },
@@ -346,7 +388,9 @@ export default new Vuex.Store({
         })
         .catch(error => console.log(error));
     },
-    returnToMain({ commit }) {
+    returnToMain({ state, commit }) {
+      state.article.title = null;
+      state.article.content = null;
       commit('SHOW_MAIN_CONTENT');
     },
     search({ state, dispatch }) {
@@ -415,7 +459,10 @@ export default new Vuex.Store({
               title: article.title,
               content: shortContent,
               author: article.author,
-              date: article.createdAt.split('T')[0],
+              publicationDate: article.createdAt.split('T')[0],
+              publicationTime: article.createdAt.split('T')[1].split('.')[0],
+              modificationDate: article.updatedAt.split('T')[0],
+              modificationTime: article.updatedAt.split('T')[1].split('.')[0],
               fullContent: content === article.content ? shortContent : longContent,
               sharedArticleTitle: article.sharedArticle_title,
               sharedArticleId: article.sharedArticle_id,
@@ -433,6 +480,17 @@ export default new Vuex.Store({
       commit('SHARE_ARTICLE');
       state.sharedArticle.title = article.title;
       state.sharedArticle.id = article.id;
+    },
+    editArticle({ state, commit, dispatch }, article) {
+      let content = "";
+      for (let paragraph of article.fullContent) {
+        content += `${paragraph}\n`;
+      }
+      state.article.id = article.id;
+      state.article.title = article.title;
+      state.article.content = content;
+      commit('EDIT_ARTICLE');
+      dispatch('newArticle');
     },
     deleteArticle({ state, dispatch }, article) {
       if (confirm("Êtes-vous sûr de vouloir supprimer cet article ?")) {
@@ -470,6 +528,8 @@ export default new Vuex.Store({
             article.getComments = false;
             article.noComment = false;
             article.newComment = false;
+            state.comment.id = null;
+            state.comment.content = null;
           }
           if (comments.length === 0) {
             return article.noComment = true;
@@ -479,14 +539,24 @@ export default new Vuex.Store({
             state.comments.push({
               id: comment.id,
               author: comment.author,
-              date: comment.createdAt.split('T')[0],
-              time: comment.createdAt.split('T')[1].split('.')[0],
+              publicationDate: comment.createdAt.split('T')[0],
+              publicationTime: comment.createdAt.split('T')[1].split('.')[0],
+              modificationDate: comment.updatedAt.split('T')[0],
+              modificationTime: comment.updatedAt.split('T')[1].split('.')[0],
               content: content
             });
           }
           article.getComments = true;
         })
         .catch(error => console.log(error));
+    },
+    editComment({ state }, comment) {
+      let content = "";
+      for (let paragraph of comment.content) {
+        content += `${paragraph}\n`;
+      }
+      state.comment.id = comment.id,
+      state.comment.content = content;
     },
     addComment({ state, dispatch }, article) {
       axios({
@@ -501,11 +571,34 @@ export default new Vuex.Store({
       })
         .then(response => {
           console.log(response);
-          alert('Votre commentaire a bien été ajouté');
-          article.newComment = false,
+          alert("Votre commentaire a bien été ajouté");
           dispatch('showComments', article);
         })
-        .catch(error => console.log(error));
+        .catch(error => {
+          alert("Une erreur est survenue")
+          console.log(error);
+        });
+    },
+    updateComment({ state, dispatch }, article) {
+      axios({
+        method: 'PUT',
+        url: '/comments',
+        data: {
+          id: state.comment.id,
+          content: state.comment.content
+        },
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(response => {
+          console.log(response);
+          alert("Votre contenu a été mis à jour");
+          state.comment.content = null;
+          dispatch('showComments', article);
+        })
+        .catch(error => {
+          alert("Une erreur est survenue");
+          console.log(error);
+    });
     },
     deleteComment({ state, dispatch }, comment) {
       if (confirm("Êtes-vous sûr de vouloir supprimer ce commentaire ?")) {

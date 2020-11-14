@@ -10,8 +10,9 @@ router.get('/', auth, articlesCtrl.getLatestArticles);
 router.get('/:id', auth, articlesCtrl.getArticleById);
 router.get('/date/:date', auth, articlesCtrl.getArticlesByDate);
 router.get('/author/:author', auth, articlesCtrl.getArticlesByAuthor);
-router.get('/:date/:author', articlesCtrl.searchArticles);
+router.get('/:date/:author', auth, articlesCtrl.searchArticles);
 router.post('/', auth, articlesCtrl.createArticle);
+router.put('/', auth, articlesCtrl.updateArticle);
 router.delete('/', auth, articlesCtrl.deleteArticle);
 
 module.exports = router;
