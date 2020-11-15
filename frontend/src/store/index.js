@@ -22,6 +22,7 @@ export default new Vuex.Store({
     deleteQuery: false,
     // Variables de la route Forum
     main: true,
+    charter: false,
     article: {
       id: null,
       title: null,
@@ -77,6 +78,12 @@ export default new Vuex.Store({
     HIDE_MAIN_CONTENT(state) {
       state.main = false;
     },
+    GET_CHARTER(state) {
+      state.charter = true;
+    },
+    HIDE_CHARTER(state) {
+      state.charter = false;
+    },  
     GET_PUBLISH_REQUEST(state) {
       state.publication = true;
     },
@@ -222,11 +229,16 @@ export default new Vuex.Store({
       state.article.id = null;
       state.article.title = null;
       state.article.content = null;
+      commit('HIDE_CHARTER');
       commit('CANCEL_PUBLISH_REQUEST');
       commit('CANCEL_EDIT');
       commit('HIDE_ARTICLES');
       commit('UNSEARCH_ARTICLE');
       commit('SHOW_MAIN_CONTENT');
+    },
+    getCharter({ commit }) {
+      commit('HIDE_MAIN_CONTENT');
+      commit('GET_CHARTER');
     },
     newArticle({ state, commit }) {
       if (state.publication === true) {
@@ -391,6 +403,7 @@ export default new Vuex.Store({
     returnToMain({ state, commit }) {
       state.article.title = null;
       state.article.content = null;
+      commit('HIDE_CHARTER');
       commit('SHOW_MAIN_CONTENT');
     },
     search({ state, dispatch }) {
@@ -476,6 +489,7 @@ export default new Vuex.Store({
           commit('SHOW_ARTICLES');
     },
     share({ state, commit }, article) {
+      commit('HIDE_ARTICLES');
       commit('GET_PUBLISH_REQUEST');
       commit('SHARE_ARTICLE');
       state.sharedArticle.title = article.title;
