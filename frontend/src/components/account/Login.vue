@@ -3,11 +3,11 @@
     <form class="form">
       <div class="form-div">
         <label for="pseudo">Pseudo :</label>
-        <input type="text" v-model="pseudo" maxlength="20" id="pseudo" @keyup="updatePseudo">
+        <input type="text" v-model="user.pseudo" maxlength="20" id="pseudo">
       </div>
       <div class="form-div">
         <label for="password">Mot de passe :</label>
-        <input type="password" v-model="password" maxlength="20" id="password" @keyup="updatePassword">
+        <input type="password" v-model="user.password" maxlength="20" id="password">
       </div>
       <div class="form-div">
         <input type="checkbox" @change="keepUserConnected" id="keepConnexion">
@@ -18,20 +18,18 @@
       </div>
     </form>
     <p>Pas encore inscrit ? Cliquez sur le bouton ci-dessous</p>
-    <button @click="unregisterUser">Je m'inscris</button>
+    <button @click="getSignup">Je m'inscris</button>
   </div>
 </template>
 
 <script>
+  import { mapActions } from 'vuex';
+
   export default {
     name: 'Login',
     props: {
-      login: {
-        type: Function, 
-        required: true
-      },
-      unregisterUser: {
-        type: Function,
+      user: {
+        type: Object,
         required: true
       },
       keepUserConnected: {
@@ -39,19 +37,8 @@
         required: true
       }
     },
-    data() {
-      return {
-        pseudo: '',
-        password: ''
-      }
-    },
     methods: {
-      updatePseudo() {
-        this.$emit('updatePseudo', this.pseudo);
-      },
-      updatePassword() {
-        this.$emit('updatePassword', this.password);
-      }
+      ...mapActions(['getSignup', 'login'])
     }
   }
 </script>

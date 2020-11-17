@@ -16,10 +16,9 @@ export default new Vuex.Store({
       admin: false,
       token: null
     },
-    connected: false,
     registered: true,
+    connected: false,
     keepConnexion: false,
-    deleteQuery: false,
     // Variables de la route Forum
     main: true,
     charter: false,
@@ -61,15 +60,10 @@ export default new Vuex.Store({
     },
     DISCONNECTED(state) {
       state.connected = false;
+      state.keepConnexion = false;
     },
     KEEP_USER_CONNECTED(state) {
       state.keepConnexion = true;
-    },
-    DELETE_REQUEST(state) {
-      state.deleteQuery = true;
-    },
-    CANCEL_DELETE_REQUEST(state) {
-      state.deleteQuery = false;
     },
     // Mutations de la route Forum
     SHOW_MAIN_CONTENT(state) {
@@ -117,30 +111,23 @@ export default new Vuex.Store({
   },
   actions: {
     // Méthodes de la route Account
-    registerUser({ commit }) {
-      commit('REGISTERED');
-    },
-    unregisterUser({ commit }) {
+    getSignup({ commit }) {
       commit('UNREGISTERED');
+    },
+    getLogin({ commit }) {
+      commit('REGISTERED');
     },
     connectUser({ commit }) {
       commit('CONNECTED');
     },
-    disconnectUser({ state, commit }) {
+    disconnectUser({ commit }) {
       commit('DISCONNECTED');
       localStorage.clear();
       sessionStorage.clear();
-      state.keepConnexion = false;
       location.reload();
     },
     keepUserConnected({ commit }) {
       commit('KEEP_USER_CONNECTED');
-    },
-    getDeleteRequest({ commit }) {
-      commit('DELETE_REQUEST');
-    },
-    cancelDeleteRequest({ commit }) {
-      commit('CANCEL_DELETE_REQUEST');
     },
     showUser({ state }) {
       if (localStorage.getItem('pseudo') !== null) {
@@ -173,7 +160,7 @@ export default new Vuex.Store({
         })
         .catch(error => {
           alert("Une erreur est survenue. Il est possible que vous utilisiez un pseudo ou une adresse mail déjà existants.");
-          console.log(error)
+          console.log(error);
         });
     },
     login({ state, commit }) {
@@ -198,10 +185,10 @@ export default new Vuex.Store({
         })
         .catch(error => {
           alert("Désolé, une erreur est survenue. Veuillez vérifier votre pseudo et votre mot de passe.");
-          console.log(error)
+          console.log(error);
         });
     },
-    deleteUser({ state, commit }) {
+    deleteUser({ state, dispatch }) {
       axios({
         method: 'DELETE',
         url: '/users',
@@ -211,16 +198,12 @@ export default new Vuex.Store({
         }
       })
         .then(response => {
-          localStorage.clear();
-          sessionStorage.clear();
-          alert("Votre compte a bien été supprimé");
-          commit('DISCONNECTED');
-          state.keepConnexion = false;
-          commit('CANCEL_DELETE_REQUEST');
           console.log(response);
+          dispatch('disconnectUser')
+            .then(() => alert("Votre compte a bien été supprimé"))
         })
         .catch(error => {
-          alert("Une erreur est survenue. Veuillez vérifiez que votre mot de passe est correct.")
+          alert("Une erreur est survenue. Veuillez vérifiez que votre mot de passe est correct.");
           console.log(error);
         });
     },
@@ -271,20 +254,20 @@ export default new Vuex.Store({
         alert("Vous devez être connecté pour accéder à cette session");
       }   
     },
-    readLastArticles({ state, dispatch }) {
+    readLatestArticles({ state, dispatch }) {
       if (state.connected) {
         if (state.publication === true) {
           dispatch('cancelPublishRequest')
             .then(result => {
               if (result) {
-                dispatch('getLastArticles');
+                dispatch('getLatestArticles');
               } else {
                 return;
               }
             })
             .catch(error => console.log(error));
         } else {
-          dispatch('getLastArticles');
+          dispatch('getLatestArticles');
         }
       } else {
         alert("Vous devez être connecté pour accéder à cette session");
@@ -406,9 +389,18 @@ export default new Vuex.Store({
       commit('HIDE_CHARTER');
       commit('SHOW_MAIN_CONTENT');
     },
+    getLatestArticles({ state, dispatch }) {
+      axios({
+        method: 'GET',
+        url: '/articles',
+        headers: { 'Authorization': 'Bearer ' + state.user.token }
+      })
+        .then(datas => dispatch('showArticles', datas))
+        .catch(error => console.log(error));
+    },
     search({ state, dispatch }) {
       if (state.searchOptions.date !== null && state.searchOptions.author === null) {
-        dispatch('searchByDate', state.searchOptions.date);
+        dispatch('searchByDate', state.searchOptions.date)
       } else if (state.searchOptions.date === null && state.searchOptions.author !== null) {
         dispatch('searchByAuthor', state.searchOptions.author);
       } else if (state.searchOptions.date !== null && state.searchOptions.author !== null) {
@@ -417,10 +409,10 @@ export default new Vuex.Store({
         alert("Vous devez renseigner au moins un paramètre");
       }
     },
-    searchByDate({ state, dispatch }) {
+    searchByDate({ state, dispatch }, date) {
       axios({
         method: 'GET',
-        url: '/articles/date/' + state.searchOptions.date,
+        url: '/articles/date/' + date,
         headers: { 'Authorization': 'Bearer ' + state.user.token }
       })
       .then(datas => dispatch('showArticles', datas))
@@ -444,19 +436,12 @@ export default new Vuex.Store({
         .then(datas => dispatch('showArticles', datas))
         .catch(error => console.log(error));
     },
-    getLastArticles({ state, dispatch }) {
-      axios({
-        method: 'GET',
-        url: '/articles',
-        headers: { 'Authorization': 'Bearer ' + state.user.token }
-      })
-        .then(datas => dispatch('showArticles', datas))
-        .catch(error => console.log(error));
-    },
     showArticles({ state, commit }, datas) {
       let articles = datas.data.articles;
       if (articles.length === 0) {
-        return alert("Aucun article disponible");
+        alert("Aucun article disponible");
+        location.reload();
+        return;
       }
       state.articles.splice(0, state.articles.length);
           for (let article of articles) {
@@ -520,7 +505,7 @@ export default new Vuex.Store({
             if (!state.user.admin) {
               dispatch('showUserArticles');
             } else {
-              dispatch('readLastArticles');
+              dispatch('readLatestArticles');
             }
           })
           .catch(error => {
@@ -625,7 +610,7 @@ export default new Vuex.Store({
           .then(response => {
             console.log(response);
             alert("Commentaire supprimé");
-            dispatch('readLastArticles');
+            dispatch('readLatestArticles');
           })
           .catch(error => {
             alert("Une erreur est survenue");

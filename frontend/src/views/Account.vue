@@ -2,34 +2,19 @@
   <div class="account">
     <div v-if="registered && connected">
       <Dashboard
-        :pseudo="user.pseudo"
-        :deleteQuery="deleteQuery"
-        :disconnectUser="disconnectUser"
-        :getDeleteRequest="getDeleteRequest"
-        :cancelDeleteRequest="cancelDeleteRequest"
-        :deleteUser="deleteUser"
-        @updatePassword="setPassword"
+        :user="user"
       />
     </div>
     <div v-else-if="registered && !connected">
       <Login
-        :login="login"
-        :unregisterUser="unregisterUser"
+        :user="user"
         :keepUserConnected="keepUserConnected"
-        @updatePseudo="setPseudo"
-        @updatePassword="setPassword"
       />
     </div>
     <div v-else>
       <Signup
-        :signup="signup"
-        :registerUser="registerUser"
+        :user="user"
         :keepUserConnected="keepUserConnected"
-        @updateLastName="setLastName"
-        @updateFirstName="setFirstName"
-        @updateEmail="setEmail"
-        @updatePseudo="setPseudo"
-        @updatePassword="setPassword"
       />
     </div>
   </div>
@@ -37,9 +22,9 @@
 
 <script>
   import { mapState, mapActions } from 'vuex';
-  import Dashboard from '@/components/account/Dashboard.vue';
-  import Login from '@/components/account/Login.vue';
-  import Signup from '@/components/account/Signup.vue';
+  import Dashboard from '@/components/account/Dashboard';
+  import Login from '@/components/account/Login';
+  import Signup from '@/components/account/Signup';
 
   export default {
     name: 'Account',
@@ -49,28 +34,12 @@
       Signup
     },
     computed: {
-      ...mapState(['user', 'registered', 'connected', 'deleteQuery'])
+      ...mapState(['user', 'connected', 'registered'])
     },
     methods: {
-      ...mapActions(['registerUser', 'unregisterUser', 'connectUser', 'disconnectUser', 'showUser', 'keepUserConnected', 'getDeleteRequest','cancelDeleteRequest', 'deleteUser', 'signup', 'login']),
-      setLastName(lastName) {
-        this.user.lastName = lastName;
-      },
-      setFirstName(firstName) {
-        this.user.firstName = firstName;
-      },
-      setEmail(email) {
-        this.user.email = email;
-      },
-      setPseudo(pseudo) {
-        this.user.pseudo = pseudo;
-      },
-      setPassword(password) {
-        this.user.password = password;
-      }
+      ...mapActions(['connectUser', 'keepUserConnected', 'showUser']),
     },
     beforeMount() {
-      this.cancelDeleteRequest();
       if(localStorage.getItem('pseudo') !== null || sessionStorage.getItem('pseudo') !== null) {
         this.showUser();
         this.connectUser();

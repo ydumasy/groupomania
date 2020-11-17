@@ -33,6 +33,7 @@
 </template>
 
 <script>
+  import { mapState, mapActions } from 'vuex';
   import ShowComments from '@/components/forum/ShowComments.vue';
 
   export default {
@@ -44,55 +45,13 @@
       user: {
         type: Object,
         required: true
-      },
-      comment: {
-        type: Object,
-        required: true
-      },
-      articles: {
-        type: Array,
-        required: true
-      },
-      comments: {
-        type: Array,
-        required: true
-      },
-      getArticle: {
-        type: Function,
-        required: true
-      },
-      editArticle: {
-        type: Function,
-        required: true
-      },
-      deleteArticle: {
-        type: Function,
-        required: true
-      },
-      showComments: {
-        type: Function,
-        required: true
-      },
-      editComment: {
-        type: Function,
-        required: true
-      },
-      addComment: {
-        type: Function,
-        required: true
-      },
-      updateComment: {
-        type: Function,
-        required: true
-      },
-      deleteComment: {
-        type: Function,
-        required: true
-      },
-      share: {
-        type: Function,
-        required: true
       }
+    },
+    computed: {
+      ...mapState(['comment', 'articles', 'comments'])
+    },
+    methods: {
+      ...mapActions(['getArticle', 'share', 'editArticle', 'deleteArticle', 'showComments', 'editComment', 'addComment', 'updateComment', 'deleteComment'])
     }
   }
 </script>

@@ -18,17 +18,21 @@
 </template>
 
 <script>
+  import { mapState, mapActions } from 'vuex';
+
   export default {
     name: 'SearchArticle',
     props: {
-      searchOptions: {
+      user: {
         type: Object,
         required: true
-      },
-      search: {
-        type: Function,
-        required: true
       }
+    },
+    computed: {
+      ...mapState(['searchOptions'])
+    },
+    methods: {
+      ...mapActions(['search'])
     }
   }
 </script>

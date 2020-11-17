@@ -31,37 +31,25 @@
 </template>
 
 <script>
+  import { mapState, mapActions } from 'vuex';
+
   export default {
     name: 'NewArticle',
     props: {
-      edit: {
-        type: Boolean,
-        required: true
-      },
       article: {
         type: Object,
-        required: true
-      },
-      addSharedArticle: {
-        type: Boolean,
-        default: false
-      },
-      sharedArticle: {
-        type: Object,
-        required: true
-      },
-      publish: {
-        type: Function,
-        required: true
-      },
-      update: {
-        type: Function,
         required: true
       },
       cancelPublishRequest: {
         type: Function,
         required: true
       }
+    },
+    computed: {
+      ...mapState(['edit', 'addSharedArticle', 'sharedArticle'])
+    },
+    methods: {
+      ...mapActions(['publish', 'update'])
     }
   }
 </script>
