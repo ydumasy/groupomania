@@ -13,7 +13,10 @@ Pour démarrer le serveur, placez-vous dans le dossier *backend* du projet puis 
 Ensuite, depuis le dossier *frontend* du projet, utilisez la commande `npm run serve`. Rendez-vous ensuite à l'adresse `http://localhost:8080/` pour avoir accès à l'application.
 
 Pour utiliser la base de donnée pré-enregistrée, vous devez préalablement créer une base de donnée dans MySQL nommée *groupomania* à l'aide de la commande `CREATE DATABASE groupomania`.  
-Une fois dans la base de donnée, utilisez la commande `SOURCE {path}/groupomania_sauvegarde.sql`.
+Vous devrez également créer un nouvel utilisateur avec la commande suivante :  
+`CREATE USER 'user'@'localhost' IDENTIFIED BY 'A476bJwy';`  
+`GRANT ALL PRIVILEGES ON groupomania.* TO 'user'@'localhost';`  
+Une fois dans la base de donnée, utilisez la commande `SOURCE {path}/groupomania_sauvegarde.sql`.s
 
 ### Utilisation ###
 
